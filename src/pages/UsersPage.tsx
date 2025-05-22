@@ -200,7 +200,7 @@ const UsersPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center py-12">
         <Loader size="lg" text={t('loadingUsers')} />
       </div>
     );
@@ -208,24 +208,6 @@ const UsersPage: React.FC = () => {
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('users')}</h1>
-          <p className="text-gray-600 mt-1">{t('manageSystemUsers')}</p>
-        </div>
-        {currentUserRole === 'admin' && (
-          <div className="mt-4 md:mt-0">
-            <Button 
-              variant="primary" 
-              leftIcon={<Plus size={16} />}
-              onClick={() => setShowAddUserForm(true)}
-            >
-              {t('addUser')}
-            </Button>
-          </div>
-        )}
-      </div>
-
       {currentUserRole !== 'admin' && (
         <Card className="mb-6 bg-warning-50 border-warning-200">
           <CardBody className="flex items-center gap-3 text-warning-800">
@@ -242,6 +224,18 @@ const UsersPage: React.FC = () => {
           </CardBody>
         </Card>
       )}
+
+      <div className="flex justify-end mb-6">
+        {currentUserRole === 'admin' && (
+          <Button 
+            variant="primary" 
+            leftIcon={<Plus size={16} />}
+            onClick={() => setShowAddUserForm(true)}
+          >
+            {t('addUser')}
+          </Button>
+        )}
+      </div>
 
       {showAddUserForm && currentUserRole === 'admin' && (
         <Card className="mb-6">
@@ -350,57 +344,50 @@ const UsersPage: React.FC = () => {
         </CardBody>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <h2 className="text-lg font-medium text-gray-900">
-            {t('users')} ({filteredUsers.length})
-          </h2>
-        </CardHeader>
-        <div>
-          {filteredUsers.length > 0 ? (
-            <div className="divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <UserListItem
-                  key={user.id}
-                  id={user.id}
-                  email={user.email}
-                  fullName={user.full_name}
-                  role={user.role}
-                  department={user.department}
-                  createdAt={user.created_at}
-                  onDelete={handleDeleteUser}
-                  currentUserRole={currentUserRole}
-                />
-              ))}
-            </div>
-          ) : (
-            <CardBody className="py-12">
-              <div className="text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-                  <Users size={24} className="text-gray-600" />
-                </div>
-                <h3 className="mt-3 text-lg font-medium text-gray-900">{t('noUsersFound')}</h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  {searchQuery
-                    ? t('noMatchingUsers').replace('{query}', searchQuery)
-                    : t('getStartedAddUser')}
-                </p>
-                {currentUserRole === 'admin' && (
-                  <div className="mt-6">
-                    <Button 
-                      variant="primary" 
-                      leftIcon={<Plus size={16} />}
-                      onClick={() => setShowAddUserForm(true)}
-                    >
-                      {t('addUser')}
-                    </Button>
-                  </div>
-                )}
+      <div>
+        {filteredUsers.length > 0 ? (
+          <div className="divide-y divide-gray-200">
+            {filteredUsers.map((user) => (
+              <UserListItem
+                key={user.id}
+                id={user.id}
+                email={user.email}
+                fullName={user.full_name}
+                role={user.role}
+                department={user.department}
+                createdAt={user.created_at}
+                onDelete={handleDeleteUser}
+                currentUserRole={currentUserRole}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="py-12">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
+                <Users size={24} className="text-gray-600" />
               </div>
-            </CardBody>
-          )}
-        </div>
-      </Card>
+              <h3 className="mt-3 text-lg font-medium text-gray-900">{t('noUsersFound')}</h3>
+              <p className="mt-2 text-sm text-gray-500">
+                {searchQuery
+                  ? t('noMatchingUsers').replace('{query}', searchQuery)
+                  : t('getStartedAddUser')}
+              </p>
+              {currentUserRole === 'admin' && (
+                <div className="mt-6">
+                  <Button 
+                    variant="primary" 
+                    leftIcon={<Plus size={16} />}
+                    onClick={() => setShowAddUserForm(true)}
+                  >
+                    {t('addUser')}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
