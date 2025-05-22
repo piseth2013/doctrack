@@ -25,6 +25,7 @@ interface Document {
 const DocumentsPage: React.FC = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const statusFilter = searchParams.get('status') || 'all';
@@ -33,7 +34,14 @@ const DocumentsPage: React.FC = () => {
   useEffect(() => {
     const fetchDocuments = async () => {
       setIsLoading(true);
+      setError(null);
+      
       try {
+        // Check if we have a valid Supabase client
+        if (!supabase) {
+          throw new Error('Supabase client is not initialized');
+        }
+
         let query = supabase
           .from('documents')
           .select(`
@@ -54,15 +62,17 @@ const DocumentsPage: React.FC = () => {
           query = query.eq('status', statusFilter);
         }
 
-        const { data, error } = await query;
+        const { data, error: supabaseError } = await query;
 
-        if (error) {
-          throw error;
+        if (supabaseError) {
+          throw supabaseError;
         }
 
         setDocuments(data || []);
-      } catch (error) {
-        console.error('Error fetching documents:', error);
+      } catch (err) {
+        console.error('Error fetching documents:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch documents');
+        setDocuments([]);
       } finally {
         setIsLoading(false);
       }
@@ -83,6 +93,30 @@ const DocumentsPage: React.FC = () => {
     doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (doc.description && doc.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  if (error) {
+    return (
+      <Card>
+        <CardBody className="py-12">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-error-100">
+              <FileText className="h-6 w-6 text-error-600" />
+            </div>
+            <h3 className="mt-3 text-lg font-medium text-gray-900">{t('error')}</h3>
+            <p className="mt-2 text-sm text-gray-500">{error}</p>
+            <div className="mt-6">
+              <Button
+                variant="primary"
+                onClick={() => window.location.reload()}
+              >
+                {t('tryAgain')}
+              </Button>
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+    );
+  }
 
   return (
     <div>
