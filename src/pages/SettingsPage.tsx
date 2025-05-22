@@ -39,9 +39,9 @@ const SettingsPage: React.FC = () => {
       const fileName = `logo.${fileExt}`;
       const filePath = `public/${fileName}`;
 
-      // Upload file to Supabase Storage
+      // Upload file to Supabase Storage using the correct bucket name
       const { error: uploadError } = await supabase.storage
-        .from('assets')
+        .from('organization_assets')
         .upload(filePath, file, {
           upsert: true,
           contentType: file.type,
@@ -49,9 +49,9 @@ const SettingsPage: React.FC = () => {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
+      // Get public URL from the correct bucket
       const { data: { publicUrl } } = supabase.storage
-        .from('assets')
+        .from('organization_assets')
         .getPublicUrl(filePath);
 
       // Update site settings with new logo URL
