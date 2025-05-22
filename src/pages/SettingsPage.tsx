@@ -1,15 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
-import { Users, Settings as SettingsIcon, Building2, Users2, Briefcase } from 'lucide-react';
+import { Users, Settings as SettingsIcon, Building2, Users2, Briefcase, Upload } from 'lucide-react';
 import { useTranslation } from '../lib/translations';
 import UsersPage from './UsersPage';
 import OrganizationPage from './organization/OrganizationPage';
+import Button from '../components/ui/Button';
+import { supabase } from '../lib/supabase';
 
 type SettingsSection = 'users' | 'general' | 'organization';
 
 const SettingsPage: React.FC = () => {
   const t = useTranslation();
   const [activeSection, setActiveSection] = useState<SettingsSection>('users');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  const handleLogoUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadError('Image size should be less than 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError('');
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo.${fileExt}`;
+      const filePath = `public/${fileName}`;
+
+      // Upload file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('assets')
+        .upload(filePath, file, {
+          upsert: true,
+          contentType: file.type,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('assets')
+        .getPublicUrl(filePath);
+
+      // Update site settings with new logo URL
+      const { error: updateError } = await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'logo_url',
+          value: publicUrl,
+        });
+
+      if (updateError) throw updateError;
+
+      // Force reload to show new logo
+      window.location.reload();
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      setUploadError('Failed to upload logo. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  }, []);
 
   const menuItems = [
     {
@@ -80,7 +143,45 @@ const SettingsPage: React.FC = () => {
                 <h2 className="text-lg font-medium text-gray-900">{t('general')}</h2>
               </CardHeader>
               <CardBody>
-                <p className="text-gray-500">{t('comingSoon')}</p>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 mb-2">Logo</h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Upload your organization logo. The logo will be displayed in the sidebar and header.
+                    </p>
+                    
+                    {uploadError && (
+                      <div className="mb-4 p-4 text-sm text-error-700 bg-error-50 rounded-md">
+                        {uploadError}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="outline"
+                        leftIcon={<Upload size={16} />}
+                        isLoading={isUploading}
+                        onClick={() => document.getElementById('logo-upload')?.click()}
+                      >
+                        Upload New Logo
+                      </Button>
+                      <input
+                        type="file"
+                        id="logo-upload"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                      />
+                      <p className="text-xs text-gray-500">
+                        Recommended size: 128x128px. Max file size: 2MB.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-6">
+                    <p className="text-gray-500">{t('comingSoon')}</p>
+                  </div>
+                </div>
               </CardBody>
             </Card>
           )}
