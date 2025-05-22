@@ -112,8 +112,10 @@ export default function NewDocumentPage() {
             Files
           </label>
           <DocumentUploader
-            files={files}
-            onChange={setFiles}
+            onFilesSelected={setFiles}
+            maxFiles={5}
+            maxSize={5 * 1024 * 1024} // 5MB
+            acceptedFileTypes={['.pdf', '.doc', '.docx', '.txt', '.xls', '.xlsx']}
           />
         </div>
 
