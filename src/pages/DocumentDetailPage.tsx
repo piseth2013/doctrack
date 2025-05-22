@@ -8,7 +8,6 @@ import {
   Download, 
   Eye, 
   Trash2,
-  ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/ui/Card';
@@ -18,6 +17,7 @@ import StatusUpdater from '../components/documents/StatusUpdater';
 import Loader from '../components/ui/Loader';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../components/auth/AuthWrapper';
+import { useTranslation } from '../lib/translations';
 
 interface DocumentFile {
   id: string;
@@ -47,6 +47,7 @@ const DocumentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const t = useTranslation();
   const [document, setDocument] = useState<Document | null>(null);
   const [files, setFiles] = useState<DocumentFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -203,7 +204,7 @@ const DocumentDetailPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader size="lg" text="Loading document details..." />
+        <Loader size="lg" text={t('loading')} />
       </div>
     );
   }
@@ -214,10 +215,10 @@ const DocumentDetailPage: React.FC = () => {
         <div className="text-error-600 mb-4">
           <FileText size={48} className="mx-auto" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Document Not Found</h1>
-        <p className="text-gray-600 mb-6">{error || 'The requested document could not be found'}</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('noDocumentsFound')}</h1>
+        <p className="text-gray-600 mb-6">{error || t('documentNotFound')}</p>
         <Button variant="primary" onClick={() => navigate('/documents')}>
-          Back to Documents
+          {t('backToDocuments')}
         </Button>
       </div>
     );
@@ -231,7 +232,7 @@ const DocumentDetailPage: React.FC = () => {
           leftIcon={<ArrowLeft size={16} />}
           onClick={() => navigate('/documents')}
         >
-          Back to Documents
+          {t('backToDocuments')}
         </Button>
       </div>
 
@@ -248,7 +249,7 @@ const DocumentDetailPage: React.FC = () => {
             <StatusBadge status={document.status} />
             <span className="mx-2 text-gray-400">•</span>
             <span className="text-sm text-gray-600">
-              Last updated: {format(new Date(document.updated_at), 'MMM d, yyyy h:mm a')}
+              {t('lastUpdated')}: {format(new Date(document.updated_at), 'MMM d, yyyy h:mm a')}
             </span>
           </div>
         </div>
@@ -263,17 +264,17 @@ const DocumentDetailPage: React.FC = () => {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-medium text-gray-900">Document Details</h2>
+              <h2 className="text-lg font-medium text-gray-900">{t('documentInformation')}</h2>
             </CardHeader>
             <CardBody>
               {document.description ? (
                 <p className="text-gray-700 whitespace-pre-line">{document.description}</p>
               ) : (
-                <p className="text-gray-500 italic">No description provided</p>
+                <p className="text-gray-500 italic">{t('noDescription')}</p>
               )}
 
               <div className="mt-6 border-t border-gray-200 pt-6">
-                <h3 className="text-base font-medium text-gray-900 mb-4">Document Files</h3>
+                <h3 className="text-base font-medium text-gray-900 mb-4">{t('documentFiles')}</h3>
                 {files.length > 0 ? (
                   <div className="space-y-3">
                     {files.map((file) => (
@@ -290,7 +291,7 @@ const DocumentDetailPage: React.FC = () => {
                               {file.file_name}
                             </p>
                             <p className="text-xs text-gray-500 mt-0.5">
-                              {formatFileSize(file.file_size)} • Uploaded {format(new Date(file.created_at), 'MMM d, yyyy')}
+                              {formatFileSize(file.file_size)} • {t('uploadedOn')} {format(new Date(file.created_at), 'MMM d, yyyy')}
                             </p>
                           </div>
                         </div>
@@ -301,7 +302,7 @@ const DocumentDetailPage: React.FC = () => {
                             leftIcon={<Eye size={14} />}
                             onClick={() => handleDownloadFile(file)}
                           >
-                            View
+                            {t('view')}
                           </Button>
                           <Button
                             variant="outline"
@@ -309,14 +310,14 @@ const DocumentDetailPage: React.FC = () => {
                             leftIcon={<Download size={14} />}
                             onClick={() => handleDownloadFile(file)}
                           >
-                            Download
+                            {t('download')}
                           </Button>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 italic">No files attached to this document</p>
+                  <p className="text-gray-500 italic">{t('noFilesAttached')}</p>
                 )}
               </div>
             </CardBody>
@@ -326,15 +327,15 @@ const DocumentDetailPage: React.FC = () => {
         <div>
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-medium text-gray-900">Document Information</h2>
+              <h2 className="text-lg font-medium text-gray-900">{t('documentInformation')}</h2>
             </CardHeader>
             <CardBody>
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Created by</h3>
+                  <h3 className="text-sm font-medium text-gray-500">{t('createdBy')}</h3>
                   <div className="mt-1 flex items-center">
                     <User size={16} className="text-gray-400 mr-2" />
-                    <span className="text-gray-900">{document.profiles?.full_name || 'Unknown User'}</span>
+                    <span className="text-gray-900">{document.profiles?.full_name || t('unknownUser')}</span>
                   </div>
                   <div className="mt-1 text-sm text-gray-500 ml-6">
                     {document.profiles?.email}
@@ -342,7 +343,7 @@ const DocumentDetailPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Created on</h3>
+                  <h3 className="text-sm font-medium text-gray-500">{t('createdOn')}</h3>
                   <div className="mt-1 flex items-center">
                     <Calendar size={16} className="text-gray-400 mr-2" />
                     <span className="text-gray-900">
@@ -355,7 +356,7 @@ const DocumentDetailPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Last updated</h3>
+                  <h3 className="text-sm font-medium text-gray-500">{t('lastUpdated')}</h3>
                   <div className="mt-1 flex items-center">
                     <Calendar size={16} className="text-gray-400 mr-2" />
                     <span className="text-gray-900">
@@ -368,7 +369,7 @@ const DocumentDetailPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Document ID</h3>
+                  <h3 className="text-sm font-medium text-gray-500">{t('documentId')}</h3>
                   <div className="mt-1 flex items-center">
                     <span className="text-xs font-mono bg-gray-100 p-1 rounded text-gray-600 w-full truncate">
                       {document.id}
@@ -383,7 +384,7 @@ const DocumentDetailPage: React.FC = () => {
                 leftIcon={<Trash2 size={16} />}
                 onClick={handleDeleteDocument}
               >
-                Delete Document
+                {t('deleteDocument')}
               </Button>
             </CardFooter>
           </Card>
