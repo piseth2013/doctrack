@@ -13,35 +13,38 @@ import {
 import { useAuth } from '../auth/AuthWrapper';
 import Avatar from '../ui/Avatar';
 import { twMerge } from 'tailwind-merge';
+import LanguageToggle from './LanguageToggle';
+import { useTranslation } from '../../lib/translations';
 
 const AppLayout: React.FC = () => {
   const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const t = useTranslation();
 
   const navItems = [
     {
-      name: 'Dashboard',
+      name: t('dashboard'),
       icon: <LayoutDashboard size={20} />,
       path: '/dashboard',
     },
     {
-      name: 'Documents',
+      name: t('documents'),
       icon: <FileText size={20} />,
       path: '/documents',
     },
     {
-      name: 'New Document',
+      name: t('newDocument'),
       icon: <PlusCircle size={20} />,
       path: '/documents/new',
     },
     {
-      name: 'Users',
+      name: t('users'),
       icon: <Users size={20} />,
       path: '/users',
     },
     {
-      name: 'Settings',
+      name: t('settings'),
       icon: <Settings size={20} />,
       path: '/settings',
     },
@@ -85,7 +88,8 @@ const AppLayout: React.FC = () => {
             </nav>
           </div>
           <div className="px-4 mt-6">
-            <div className="flex items-center">
+            <LanguageToggle />
+            <div className="flex items-center mt-4">
               <div className="flex-shrink-0">
                 <Avatar
                   name={user?.email || ''}
@@ -100,7 +104,7 @@ const AppLayout: React.FC = () => {
                   className="text-xs font-medium text-primary-200 group flex items-center mt-1 hover:text-white"
                 >
                   <LogOut size={14} className="mr-1" />
-                  Sign out
+                  {t('signOut')}
                 </button>
               </div>
             </div>
@@ -144,7 +148,8 @@ const AppLayout: React.FC = () => {
               </NavLink>
             ))}
             <div className="pt-4 mt-4 border-t border-primary-700">
-              <div className="flex items-center px-2">
+              <LanguageToggle />
+              <div className="flex items-center px-2 mt-4">
                 <Avatar
                   name={user?.email || ''}
                   size="md"
@@ -157,7 +162,7 @@ const AppLayout: React.FC = () => {
                     className="text-xs font-medium text-primary-200 group flex items-center mt-1 hover:text-white"
                   >
                     <LogOut size={14} className="mr-1" />
-                    Sign out
+                    {t('signOut')}
                   </button>
                 </div>
               </div>
