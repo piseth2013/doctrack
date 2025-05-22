@@ -127,11 +127,11 @@ const NewDocumentPage: React.FC = () => {
             )}
 
             <Input
-              label={t('documentTitle')}
+              label="Document Title"
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('documentTitle')}
+              placeholder="Enter document title"
               required
               fullWidth
             />
