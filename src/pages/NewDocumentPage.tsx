@@ -1,66 +1,48 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, ArrowLeft } from 'lucide-react';
-import { Card, CardBody, CardHeader, CardFooter } from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
-import DocumentUploader from '../components/documents/DocumentUploader';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../components/auth/AuthWrapper';
-import { useTranslation } from '../lib/translations';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { DocumentUploader } from '../components/documents/DocumentUploader';
 
-interface FileWithPreview extends File {
-  preview?: string;
-}
-
-const NewDocumentPage: React.FC = () => {
+export default function NewDocumentPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const t = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [files, setFiles] = useState<FileWithPreview[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!title.trim()) {
-      setError('Title is required');
-      return;
-    }
-
-    if (files.length === 0) {
-      setError('At least one document file is required');
-      return;
-    }
-
     setIsSubmitting(true);
-    setError('');
+    setError(null);
 
     try {
-      // 1. Create document record with auto-generated UUID
-      const documentId = crypto.randomUUID();
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      // Create the document
       const { data: document, error: documentError } = await supabase
         .from('documents')
         .insert({
-          id: documentId,
           title,
-          description: description || null,
-          status: 'pending',
-          user_id: user?.id,
+          description,
+          user_id: user.id,
         })
-        .select('*')
+        .select()
         .single();
 
-      if (documentError || !document) {
-        throw new Error(documentError?.message || 'Failed to create document');
-      }
+      if (documentError) throw documentError;
+      if (!document) throw new Error('Failed to create document');
 
-      // 2. Upload files to Storage
-      const filePromises = files.map(async (file) => {
-        const filePath = `documents/${documentId}/${file.name}`;
+      // Upload each file
+      for (const file of files) {
+        // Encode the filename to handle special characters
+        const encodedFileName = encodeURIComponent(file.name);
+        const filePath = `documents/${document.id}/${encodedFileName}`;
+
         const { error: uploadError } = await supabase.storage
           .from('document-files')
           .upload(filePath, file);
@@ -69,11 +51,11 @@ const NewDocumentPage: React.FC = () => {
           throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
         }
 
-        // 3. Create file record
+        // Create document_files record
         const { error: fileRecordError } = await supabase
           .from('document_files')
           .insert({
-            document_id: documentId,
+            document_id: document.id,
             file_path: filePath,
             file_name: file.name,
             file_type: file.type,
@@ -81,98 +63,82 @@ const NewDocumentPage: React.FC = () => {
           });
 
         if (fileRecordError) {
-          throw new Error(`Failed to record file ${file.name}: ${fileRecordError.message}`);
+          throw new Error(`Failed to create file record: ${fileRecordError.message}`);
         }
-      });
+      }
 
-      await Promise.all(filePromises);
-      
-      // Success - navigate to document page
-      navigate(`/documents/${documentId}`);
-    } catch (error) {
-      console.error('Error creating document:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      // Navigate to the document detail page
+      navigate(`/documents/${document.id}`);
+    } catch (err) {
+      setError(`Error creating document:\n\n${err instanceof Error ? err.message : String(err)}`);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          leftIcon={<ArrowLeft size={16} />}
-          onClick={() => navigate('/documents')}
-        >
-          {t('backToDocuments')}
-        </Button>
-      </div>
+    <div className="max-w-2xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">New Document</h1>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+            Title
+          </label>
+          <Input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </div>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t('uploadNewDocument')}</h1>
-        <p className="text-gray-600 mt-1">{t('newDocument')}</p>
-      </div>
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+            Description
+          </label>
+          <textarea
+            id="description"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
 
-      <Card>
-        <form onSubmit={handleSubmit}>
-          <CardHeader>
-            <h2 className="text-lg font-medium text-gray-900">{t('documentInformation')}</h2>
-          </CardHeader>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Files
+          </label>
+          <DocumentUploader
+            files={files}
+            onChange={setFiles}
+          />
+        </div>
 
-          <CardBody className="space-y-6">
-            {error && (
-              <div className="bg-error-50 text-error-700 p-4 rounded-md text-sm">
-                {error}
-              </div>
-            )}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <pre className="whitespace-pre-wrap text-sm">{error}</pre>
+          </div>
+        )}
 
-            <Input
-              label="Document Title"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter document title"
-              required
-              fullWidth
-            />
-
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Document Description
-              </label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                placeholder="Enter document description"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('documentFiles')}
-              </label>
-              <DocumentUploader onFilesSelected={setFiles} />
-            </div>
-          </CardBody>
-
-          <CardFooter className="flex justify-end">
-            <Button
-              type="submit"
-              variant="primary"
-              leftIcon={<Upload size={16} />}
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              {t('uploadNewDocument')}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+        <div className="flex justify-end space-x-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/documents')}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting || files.length === 0}
+          >
+            {isSubmitting ? 'Creating...' : 'Create Document'}
+          </Button>
+        </div>
+      </form>
     </div>
   );
-};
-
-export default NewDocumentPage;
+}
