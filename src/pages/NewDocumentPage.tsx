@@ -13,6 +13,25 @@ export default function NewDocumentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const sanitizeFileName = (fileName: string): string => {
+    // Generate a random suffix to ensure uniqueness
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    
+    // Get the file extension
+    const extension = fileName.split('.').pop() || '';
+    
+    // Create a base name by replacing non-alphanumeric characters with underscores
+    const baseName = fileName
+      .split('.')
+      .slice(0, -1)
+      .join('.')
+      .replace(/[^a-zA-Z0-9\-._]/g, '_');
+    
+    // Combine with timestamp and random suffix to ensure uniqueness
+    return `${baseName}_${timestamp}_${randomSuffix}.${extension}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -39,9 +58,9 @@ export default function NewDocumentPage() {
 
       // Upload each file
       for (const file of files) {
-        // Encode the filename to handle special characters
-        const encodedFileName = encodeURIComponent(file.name);
-        const filePath = `documents/${document.id}/${encodedFileName}`;
+        // Sanitize the filename to ensure it's compatible with Supabase storage
+        const safeFileName = sanitizeFileName(file.name);
+        const filePath = `documents/${document.id}/${safeFileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('document-files')
@@ -57,7 +76,7 @@ export default function NewDocumentPage() {
           .insert({
             document_id: document.id,
             file_path: filePath,
-            file_name: file.name,
+            file_name: file.name, // Store the original filename in the database
             file_type: file.type,
             file_size: file.size,
           });
