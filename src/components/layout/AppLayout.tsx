@@ -27,26 +27,31 @@ const AppLayout: React.FC = () => {
       name: t('dashboard'),
       icon: <LayoutDashboard size={20} />,
       path: '/dashboard',
+      exact: true
     },
     {
       name: t('documents'),
       icon: <FileText size={20} />,
       path: '/documents',
+      exact: true
     },
     {
       name: t('newDocument'),
       icon: <PlusCircle size={20} />,
       path: '/documents/new',
+      exact: true
     },
     {
       name: t('users'),
       icon: <Users size={20} />,
       path: '/users',
+      exact: true
     },
     {
       name: t('settings'),
       icon: <Settings size={20} />,
       path: '/settings',
+      exact: true
     },
   ];
 
@@ -56,6 +61,13 @@ const AppLayout: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const isPathActive = (path: string, exact: boolean) => {
+    if (exact) {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
   };
 
   return (
@@ -75,7 +87,7 @@ const AppLayout: React.FC = () => {
                   className={({ isActive }) =>
                     twMerge(
                       'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
-                      isActive
+                      isPathActive(item.path, item.exact)
                         ? 'bg-primary-900 text-white'
                         : 'text-primary-100 hover:bg-primary-700'
                     )
@@ -137,7 +149,7 @@ const AppLayout: React.FC = () => {
                 className={({ isActive }) =>
                   twMerge(
                     'group flex items-center px-2 py-3 text-base font-medium rounded-md',
-                    isActive
+                    isPathActive(item.path, item.exact)
                       ? 'bg-primary-900 text-white'
                       : 'text-primary-100 hover:bg-primary-700'
                   )
