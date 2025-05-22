@@ -70,11 +70,6 @@ const AppLayout: React.FC = () => {
         <div className="flex flex-col flex-grow bg-primary-800 pt-5 pb-4 overflow-y-auto">
           <div className="flex items-center flex-shrink-0 px-4">
             <div className="flex flex-col items-center">
-              <img 
-                src="https://i.imgur.com/h1element.jpeg" 
-                alt="Temple Logo"
-                className="w-12 h-12 mb-2"
-              />
               <h1 className="text-white text-2xl font-bold">DocTrack</h1>
             </div>
           </div>
@@ -128,11 +123,6 @@ const AppLayout: React.FC = () => {
       <div className="md:hidden fixed top-0 left-0 right-0 z-10 bg-white shadow-sm">
         <div className="px-4 py-2 flex items-center justify-between">
           <div className="flex items-center">
-            <img 
-              src="https://i.imgur.com/h1element.jpeg" 
-              alt="Temple Logo"
-              className="w-8 h-8 mr-2"
-            />
             <h1 className="text-primary-800 text-xl font-bold">DocTrack</h1>
           </div>
           <button
