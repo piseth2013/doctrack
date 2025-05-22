@@ -57,27 +57,27 @@ const UsersPage: React.FC = () => {
     fetchCurrentUserRole();
   }, []);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false });
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        if (error) {
-          throw error;
-        }
-
-        setUsers(data || []);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      } finally {
-        setIsLoading(false);
+      if (error) {
+        throw error;
       }
-    };
 
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, []);
 
@@ -110,49 +110,28 @@ const UsersPage: React.FC = () => {
     setError('');
 
     try {
-      // Create the auth user first
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: newUser.email,
-        password: newUser.password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: newUser.full_name,
-          role: newUser.role,
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify(newUser),
       });
 
-      if (authError) {
-        throw new Error(authError.message);
-      }
+      const result = await response.json();
 
-      if (!authData.user) {
-        throw new Error('Failed to create user account');
-      }
-
-      // Create the profile with the user ID from auth
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email: newUser.email,
-          full_name: newUser.full_name,
-          role: newUser.role,
-          department: newUser.department || null,
-        });
-
-      if (profileError) {
-        // If profile creation fails, clean up the auth user
-        await supabase.auth.admin.deleteUser(authData.user.id);
-        throw new Error(`Failed to create user profile: ${profileError.message}`);
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create user');
       }
 
       // Refresh user list
-      const { data: updatedUsers } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      setUsers(updatedUsers || []);
+      await fetchUsers();
       
       // Reset form
       setNewUser({
