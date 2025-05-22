@@ -20,7 +20,9 @@ export const translations = {
     newDocument: 'New Document',
     users: 'Users',
     settings: 'Settings',
+    general: 'General',
     signOut: 'Sign out',
+    comingSoon: 'More settings coming soon...',
 
     // Dashboard
     overview: 'Overview of your document management system',
@@ -86,7 +88,9 @@ export const translations = {
     newDocument: 'ឯកសារថ្មី',
     users: 'អ្នកប្រើប្រាស់',
     settings: 'ការកំណត់',
+    general: 'ទូទៅ',
     signOut: 'ចាកចេញ',
+    comingSoon: 'ការកំណត់បន្ថែមនឹងមកដល់ឆាប់ៗនេះ...',
 
     // Dashboard
     overview: 'ទិដ្ឋភាពទូទៅនៃប្រព័ន្ធគ្រប់គ្រងឯកសាររបស់អ្នក',
