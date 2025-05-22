@@ -15,12 +15,12 @@ interface DocumentUploaderProps {
   acceptedFileTypes?: string[];
 }
 
-const DocumentUploader: React.FC<DocumentUploaderProps> = ({
+export default function DocumentUploader({
   onFilesSelected,
   maxFiles = 5,
   maxSize = 5 * 1024 * 1024, // 5MB default
   acceptedFileTypes = ['.pdf', '.doc', '.docx', '.txt', '.xls', '.xlsx'],
-}) => {
+}: DocumentUploaderProps) {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const t = useTranslation();
 
@@ -158,6 +158,4 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
       )}
     </div>
   );
-};
-
-export default DocumentUploader;
+}
