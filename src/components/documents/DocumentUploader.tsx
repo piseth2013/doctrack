@@ -94,7 +94,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
               : t('dragAndDrop')}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            {t('maxFiles', { count: maxFiles })} • {t('maxSize', { size: formatFileSize(maxSize) })}
+            {t('maxFiles').replace('{count}', maxFiles.toString())} {formatFileSize(maxSize)}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             {t('acceptedFileTypes')}: {acceptedFileTypes.join(', ')}
