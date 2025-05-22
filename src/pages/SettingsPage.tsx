@@ -74,6 +74,8 @@ const SettingsPage: React.FC = () => {
           key: 'logo_url',
           value: publicUrl,
           updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'key'
         });
 
       if (updateError) throw updateError;
