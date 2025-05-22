@@ -99,7 +99,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!user) {
-    window.location.href = '/dashboard';
+    window.location.href = '/login';
     return null;
   }
 
