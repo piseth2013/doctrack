@@ -44,7 +44,6 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
     maxFiles,
     maxSize,
     accept: acceptedFileTypes.reduce((acc, type) => {
-      // Convert file extensions to MIME types
       const mimeType = type === '.pdf' ? { 'application/pdf': [] } :
                       type === '.doc' || type === '.docx' ? { 'application/msword': [], 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [] } :
                       type === '.txt' ? { 'text/plain': [] } :
@@ -62,7 +61,6 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
     setFiles(updatedFiles);
     onFilesSelected(updatedFiles);
     
-    // Revoke the preview URL to free memory
     if (fileToRemove.preview) {
       URL.revokeObjectURL(fileToRemove.preview);
     }
