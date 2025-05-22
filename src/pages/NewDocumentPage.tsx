@@ -146,7 +146,7 @@ const NewDocumentPage: React.FC = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
                 className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                placeholder={t('description')}
+                placeholder="Enter document description"
               />
             </div>
 
