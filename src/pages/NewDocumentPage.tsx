@@ -15,7 +15,9 @@ interface FileWithPreview extends File {
 const NewDocumentPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [documentId, setDocumentId] = useState('');
   const [title, setTitle] = useState('');
+  const [documentDate, setDocumentDate] = useState('');
   const [description, setDescription] = useState('');
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,8 +26,18 @@ const NewDocumentPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!documentId.trim()) {
+      setError('Document ID is required');
+      return;
+    }
+
     if (!title.trim()) {
       setError('Title is required');
+      return;
+    }
+
+    if (!documentDate) {
+      setError('Document date is required');
       return;
     }
 
@@ -42,7 +54,9 @@ const NewDocumentPage: React.FC = () => {
       const { data: document, error: documentError } = await supabase
         .from('documents')
         .insert({
+          id: documentId,
           title,
+          document_date: documentDate,
           description: description || null,
           status: 'pending',
           user_id: user?.id,
@@ -124,11 +138,31 @@ const NewDocumentPage: React.FC = () => {
             )}
 
             <Input
+              label="Document ID"
+              id="documentId"
+              value={documentId}
+              onChange={(e) => setDocumentId(e.target.value)}
+              placeholder="Enter document ID"
+              required
+              fullWidth
+            />
+
+            <Input
               label="Document Title"
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter document title"
+              required
+              fullWidth
+            />
+
+            <Input
+              label="Document Date"
+              id="documentDate"
+              type="date"
+              value={documentDate}
+              onChange={(e) => setDocumentDate(e.target.value)}
               required
               fullWidth
             />
