@@ -37,47 +37,38 @@ const DashboardPage: React.FC = () => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
-        // Get document counts
-        const { data: totalCount } = await supabase
+        // Get document counts using a single query
+        const { data: documents, error: countError } = await supabase
           .from('documents')
-          .select('id', { count: 'exact', head: true });
-        
-        const { data: pendingCount } = await supabase
-          .from('documents')
-          .select('id', { count: 'exact', head: true })
-          .eq('status', 'pending');
-        
-        const { data: approvedCount } = await supabase
-          .from('documents')
-          .select('id', { count: 'exact', head: true })
-          .eq('status', 'approved');
-        
-        const { data: rejectedCount } = await supabase
-          .from('documents')
-          .select('id', { count: 'exact', head: true })
-          .eq('status', 'rejected');
-        
+          .select('status');
+
+        if (countError) throw countError;
+
+        const counts = documents?.reduce((acc, doc) => {
+          acc.total++;
+          acc[doc.status]++;
+          return acc;
+        }, { total: 0, pending: 0, approved: 0, rejected: 0 });
+
         // Get recent documents
-        const { data: documents } = await supabase
+        const { data: recentDocs, error: recentError } = await supabase
           .from('documents')
           .select('id, title, status, created_at')
           .order('created_at', { ascending: false })
           .limit(5);
+
+        if (recentError) throw recentError;
         
         // Get user count
-        const { data: users } = await supabase
+        const { count: userCountData, error: userError } = await supabase
           .from('profiles')
-          .select('id', { count: 'exact', head: true });
+          .select('*', { count: 'exact', head: true });
+
+        if (userError) throw userError;
         
-        setDocumentCounts({
-          total: totalCount?.length || 0,
-          pending: pendingCount?.length || 0,
-          approved: approvedCount?.length || 0,
-          rejected: rejectedCount?.length || 0,
-        });
-        
-        setRecentDocuments(documents || []);
-        setUserCount(users?.length || 0);
+        setDocumentCounts(counts || { total: 0, pending: 0, approved: 0, rejected: 0 });
+        setRecentDocuments(recentDocs || []);
+        setUserCount(userCountData || 0);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
