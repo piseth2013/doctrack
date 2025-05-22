@@ -159,3 +159,5 @@ export default function DocumentUploader({
     </div>
   );
 }
+
+export { DocumentUploader }
