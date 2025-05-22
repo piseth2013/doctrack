@@ -72,6 +72,22 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
     else return (bytes / 1048576).toFixed(1) + ' MB';
   };
 
+  // Safely get translation with fallback
+  const getTranslation = (key: string, params?: Record<string, string>) => {
+    try {
+      const translation = t(key);
+      if (params && translation) {
+        return Object.entries(params).reduce(
+          (str, [key, value]) => str.replace(`{${key}}`, value),
+          translation
+        );
+      }
+      return translation || key;
+    } catch (error) {
+      return key;
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div
@@ -90,14 +106,14 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
           />
           <p className="text-base text-gray-700">
             {isDragActive
-              ? t('dropFilesHere')
-              : t('dragAndDrop')}
+              ? getTranslation('dropFilesHere')
+              : getTranslation('dragAndDrop')}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            {t('maxFiles').replace('{count}', maxFiles.toString())} {formatFileSize(maxSize)}
+            {getTranslation('maxFiles', { count: maxFiles.toString() })} {formatFileSize(maxSize)}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            {t('acceptedFileTypes')}: {acceptedFileTypes.join(', ')}
+            {getTranslation('acceptedFileTypes')}: {acceptedFileTypes.join(', ')}
           </p>
         </div>
       </div>
@@ -105,7 +121,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
       {files.length > 0 && (
         <div className="mt-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">
-            {t('selectedFiles')} ({files.length}/{maxFiles})
+            {getTranslation('selectedFiles')} ({files.length}/{maxFiles})
           </h4>
           <ul className="space-y-2">
             {files.map((file, index) => (
@@ -131,7 +147,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
                   size="sm"
                   onClick={(e) => removeFile(e, file)}
                   className="text-gray-500 hover:text-error-500"
-                  aria-label={t('removeFile')}
+                  aria-label={getTranslation('removeFile')}
                 >
                   <X size={16} />
                 </Button>
