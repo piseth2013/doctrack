@@ -1,6 +1,11 @@
-import { useState, useCallback } from 'react';
+import { create } from 'zustand';
 
 type Language = 'en' | 'km';
+
+type TranslationStore = {
+  language: Language;
+  setLanguage: (language: Language) => void;
+};
 
 const translations = {
   en: {
@@ -23,10 +28,15 @@ const translations = {
   }
 };
 
-export const useTranslation = () => {
-  const [language] = useState<Language>('en');
+export const useTranslationStore = create<TranslationStore>((set) => ({
+  language: 'en',
+  setLanguage: (language) => set({ language })
+}));
 
-  const t = useCallback((key: keyof typeof translations['en'], params?: Record<string, string | number>) => {
+export const useTranslation = () => {
+  const { language } = useTranslationStore();
+
+  const t = (key: keyof typeof translations['en'], params?: Record<string, string | number>) => {
     let translation = translations[language][key] || key;
     
     if (params) {
@@ -36,7 +46,7 @@ export const useTranslation = () => {
     }
     
     return translation;
-  }, [language]);
+  };
 
   return t;
 };
