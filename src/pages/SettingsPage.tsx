@@ -6,11 +6,13 @@ import UsersPage from './UsersPage';
 import OrganizationPage from './organization/OrganizationPage';
 import Button from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../components/auth/AuthWrapper';
 
 type SettingsSection = 'users' | 'general' | 'organization';
 
 const SettingsPage: React.FC = () => {
   const t = useTranslation();
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState<SettingsSection>('users');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -35,11 +37,22 @@ const SettingsPage: React.FC = () => {
     setUploadError('');
 
     try {
+      // First check if user is admin
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user?.id)
+        .single();
+
+      if (!profile || profile.role !== 'admin') {
+        throw new Error('Only administrators can update the logo');
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `logo.${fileExt}`;
       const filePath = `public/${fileName}`;
 
-      // Upload file to Supabase Storage using the correct bucket name
+      // Upload file to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('organization_assets')
         .upload(filePath, file, {
@@ -49,7 +62,7 @@ const SettingsPage: React.FC = () => {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL from the correct bucket
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('organization_assets')
         .getPublicUrl(filePath);
@@ -60,6 +73,7 @@ const SettingsPage: React.FC = () => {
         .upsert({
           key: 'logo_url',
           value: publicUrl,
+          updated_at: new Date().toISOString(),
         });
 
       if (updateError) throw updateError;
@@ -68,11 +82,11 @@ const SettingsPage: React.FC = () => {
       window.location.reload();
     } catch (error) {
       console.error('Error uploading logo:', error);
-      setUploadError('Failed to upload logo. Please try again.');
+      setUploadError(error instanceof Error ? error.message : 'Failed to upload logo. Please try again.');
     } finally {
       setIsUploading(false);
     }
-  }, []);
+  }, [user]);
 
   const menuItems = [
     {
