@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, ArrowLeft } from 'lucide-react';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
 import DocumentUploader from '../components/documents/DocumentUploader';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../components/auth/AuthWrapper';
@@ -126,23 +127,18 @@ const NewDocumentPage: React.FC = () => {
               </div>
             )}
 
-            <div className="space-y-1">
-              <label htmlFor="title" className="block text-sm font-medium text-black mb-1">
-                {t('documentTitle')}
-              </label>
-              <input
-                id="title"
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={t('documentTitle')}
-                required
-                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"
-              />
-            </div>
+            <Input
+              label={t('documentTitle')}
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t('documentTitle')}
+              required
+              fullWidth
+            />
 
             <div className="space-y-1">
-              <label htmlFor="description" className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                 {t('description')}
               </label>
               <textarea
@@ -156,7 +152,7 @@ const NewDocumentPage: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-black mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t('documentFiles')}
               </label>
               <DocumentUploader onFilesSelected={setFiles} />
