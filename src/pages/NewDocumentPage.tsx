@@ -128,20 +128,22 @@ const NewDocumentPage: React.FC = () => {
             )}
 
             <div className="space-y-1">
-              <Input
-                label={t('documentTitle')}
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('documentTitle')}
+              </label>
+              <input
                 id="title"
+                type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('documentTitle')}
                 required
-                fullWidth
-                className="bg-white"
+                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"
               />
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 {t('description')}
               </label>
               <textarea
