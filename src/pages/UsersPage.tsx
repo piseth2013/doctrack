@@ -110,27 +110,10 @@ const UsersPage: React.FC = () => {
     setError('');
 
     try {
-      // First create the user in Supabase Auth
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: newUser.email,
-        password: newUser.password,
-        options: {
-          data: {
-            full_name: newUser.full_name,
-            role: newUser.role,
-          },
-        },
-      });
-
-      if (signUpError || !signUpData.user) {
-        throw new Error(signUpError?.message || 'Failed to create user account');
-      }
-
-      // Then create the profile
+      // Create the profile first
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: signUpData.user.id,
           email: newUser.email,
           full_name: newUser.full_name,
           role: newUser.role,
@@ -139,6 +122,27 @@ const UsersPage: React.FC = () => {
 
       if (profileError) {
         throw new Error(`Failed to create user profile: ${profileError.message}`);
+      }
+
+      // Create the auth user
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: newUser.email,
+        password: newUser.password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: newUser.full_name,
+          role: newUser.role,
+        },
+      });
+
+      if (authError) {
+        // Rollback profile creation if auth user creation fails
+        await supabase
+          .from('profiles')
+          .delete()
+          .eq('email', newUser.email);
+        
+        throw new Error(authError.message);
       }
 
       // Refresh user list
