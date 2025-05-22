@@ -7,7 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import DocumentsPage from './pages/DocumentsPage';
 import DocumentDetailPage from './pages/DocumentDetailPage';
 import NewDocumentPage from './pages/NewDocumentPage';
-import UsersPage from './pages/UsersPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
@@ -29,8 +29,7 @@ function App() {
             <Route path="documents" element={<DocumentsPage />} />
             <Route path="documents/:id" element={<DocumentDetailPage />} />
             <Route path="documents/new" element={<NewDocumentPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="settings" element={<div className="text-center py-12">Settings page coming soon</div>} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
           
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -39,5 +38,3 @@ function App() {
     </AuthProvider>
   );
 }
-
-export default App;

@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
 import { 
   FileText, 
-  Users, 
+  Settings, 
   LayoutDashboard, 
   PlusCircle, 
   LogOut, 
   Menu, 
-  X, 
-  Settings 
+  X
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthWrapper';
 import Avatar from '../ui/Avatar';
@@ -39,12 +38,6 @@ const AppLayout: React.FC = () => {
       name: t('newDocument'),
       icon: <PlusCircle size={20} />,
       path: '/documents/new',
-      exact: true
-    },
-    {
-      name: t('users'),
-      icon: <Users size={20} />,
-      path: '/users',
       exact: true
     },
     {
