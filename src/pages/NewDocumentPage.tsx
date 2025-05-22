@@ -97,12 +97,13 @@ const NewDocumentPage: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <Button
           variant="ghost"
           leftIcon={<ArrowLeft size={16} />}
           onClick={() => navigate('/documents')}
+          className="text-gray-600 hover:text-gray-900"
         >
           {t('backToDocuments')}
         </Button>
@@ -110,7 +111,7 @@ const NewDocumentPage: React.FC = () => {
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">{t('uploadNewDocument')}</h1>
-        <p className="text-gray-600 mt-1">{t('newDocument')}</p>
+        <p className="mt-2 text-gray-600">{t('newDocument')}</p>
       </div>
 
       <Card>
@@ -126,18 +127,21 @@ const NewDocumentPage: React.FC = () => {
               </div>
             )}
 
-            <Input
-              label={t('documentTitle')}
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('documentTitle')}
-              required
-              fullWidth
-            />
+            <div className="space-y-1">
+              <Input
+                label={t('documentTitle')}
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t('documentTitle')}
+                required
+                fullWidth
+                className="bg-white"
+              />
+            </div>
 
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-1">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                 {t('description')}
               </label>
               <textarea
@@ -145,20 +149,20 @@ const NewDocumentPage: React.FC = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"
                 placeholder={t('description')}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t('documentFiles')}
               </label>
               <DocumentUploader onFilesSelected={setFiles} />
             </div>
           </CardBody>
 
-          <CardFooter className="flex justify-end">
+          <CardFooter className="flex justify-end bg-gray-50">
             <Button
               type="submit"
               variant="primary"
