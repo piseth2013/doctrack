@@ -1,4 +1,3 @@
-// @ts-ignore
 import { createClient } from 'npm:@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
@@ -25,7 +24,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Create Supabase admin client
+    // Create Supabase client with service role key
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -69,6 +68,10 @@ Deno.serve(async (req) => {
       email,
       password,
       email_confirm: true,
+      user_metadata: {
+        full_name,
+        role,
+      },
     });
 
     if (createUserError || !user) {
@@ -82,7 +85,7 @@ Deno.serve(async (req) => {
         id: user.id,
         email,
         full_name,
-        role: role || 'user', // Ensure role is set, default to 'user'
+        role,
         department: department || null,
       });
 
