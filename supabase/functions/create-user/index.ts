@@ -68,10 +68,6 @@ Deno.serve(async (req) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: {
-        full_name,
-        role,
-      },
     });
 
     if (createUserError || !user) {
@@ -94,6 +90,11 @@ Deno.serve(async (req) => {
       await supabaseAdmin.auth.admin.deleteUser(user.id);
       throw new Error(`Failed to create profile: ${profileCreateError.message}`);
     }
+
+    // Update user metadata
+    await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      user_metadata: { role }
+    });
 
     return new Response(
       JSON.stringify({ 
