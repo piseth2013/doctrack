@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, ArrowLeft } from 'lucide-react';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
 import DocumentUploader from '../components/documents/DocumentUploader';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../components/auth/AuthWrapper';
@@ -128,7 +127,7 @@ const NewDocumentPage: React.FC = () => {
             )}
 
             <div className="space-y-1">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="title" className="block text-sm font-medium text-black mb-1">
                 {t('documentTitle')}
               </label>
               <input
@@ -143,7 +142,7 @@ const NewDocumentPage: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-black mb-1">
                 {t('description')}
               </label>
               <textarea
@@ -157,7 +156,7 @@ const NewDocumentPage: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-black mb-2">
                 {t('documentFiles')}
               </label>
               <DocumentUploader onFilesSelected={setFiles} />
