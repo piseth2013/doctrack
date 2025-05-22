@@ -1,5 +1,11 @@
 {
+  "scripts": {
+    "dev": "vite"
+  },
   "dependencies": {
     "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
   }
 }
