@@ -52,10 +52,16 @@ const SettingsPage: React.FC = () => {
       const fileName = `logo.${fileExt}`;
       const filePath = `public/${fileName}`;
 
-      // Upload file to Supabase Storage
+      // Delete existing logo if it exists
+      await supabase.storage
+        .from('organization_assets')
+        .remove([filePath]);
+
+      // Upload new logo
       const { error: uploadError } = await supabase.storage
         .from('organization_assets')
         .upload(filePath, file, {
+          cacheControl: '3600',
           upsert: true,
           contentType: file.type,
         });
