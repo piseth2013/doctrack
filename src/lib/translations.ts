@@ -65,6 +65,15 @@ export const translations = {
     remove: 'Remove',
     searchUsers: 'Search users...',
     noUsersFound: 'No users found',
+    adminOnly: 'Only administrators can manage users in the system.',
+    noPermission: 'You do not have permission to create new users. Only administrators can perform this action.',
+    requiredFields: 'Email, full name, and password are required',
+    departmentOptional: 'Department (Optional)',
+    cancel: 'Cancel',
+    noMatchingUsers: 'No users matching "{query}"',
+    getStartedAddUser: 'Get started by adding a new user',
+    confirmDelete: 'Are you sure you want to delete user {name}?',
+    loadingUsers: 'Loading users...',
 
     // Auth
     signIn: 'Sign in',
@@ -122,6 +131,15 @@ export const translations = {
     remove: 'លុប',
     searchUsers: 'ស្វែងរកអ្នកប្រើប្រាស់...',
     noUsersFound: 'រកមិនឃើញអ្នកប្រើប្រាស់',
+    adminOnly: 'មានតែអ្នកគ្រប់គ្រងទេដែលអាចគ្រប់គ្រងអ្នកប្រើប្រាស់ក្នុងប្រព័ន្ធ។',
+    noPermission: 'អ្នកមិនមានសិទ្ធិបង្កើតអ្នកប្រើប្រាស់ថ្មីទេ។ មានតែអ្នកគ្រប់គ្រងទេដែលអាចធ្វើសកម្មភាពនេះបាន។',
+    requiredFields: 'អ៊ីមែល ឈ្មោះពេញ និងពាក្យសម្ងាត់ត្រូវបានទាមទារ',
+    departmentOptional: 'នាយកដ្ឋាន (ជាជម្រើស)',
+    cancel: 'បោះបង់',
+    noMatchingUsers: 'មិនមានអ្នកប្រើប្រាស់ដែលត្រូវនឹង "{query}" ទេ',
+    getStartedAddUser: 'ចាប់ផ្តើមដោយបន្ថែមអ្នកប្រើប្រាស់ថ្មី',
+    confirmDelete: 'តើអ្នកប្រាកដថាចង់លុបអ្នកប្រើប្រាស់ {name} ឬ?',
+    loadingUsers: 'កំពុងផ្ទុកអ្នកប្រើប្រាស់...',
 
     // Auth
     signIn: 'ចូល',
