@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadCloud, X, FileText } from 'lucide-react';
 import Button from '../ui/Button';
+import { useTranslation } from '../../lib/translations';
 
 interface FileWithPreview extends File {
   preview?: string;
@@ -21,6 +22,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
   acceptedFileTypes = ['.pdf', '.doc', '.docx', '.txt', '.xls', '.xlsx'],
 }) => {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
+  const t = useTranslation();
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -44,10 +46,10 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
     accept: acceptedFileTypes.reduce((acc, type) => {
       // Convert file extensions to MIME types
       const mimeType = type === '.pdf' ? { 'application/pdf': [] } :
-                        type === '.doc' || type === '.docx' ? { 'application/msword': [], 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [] } :
-                        type === '.txt' ? { 'text/plain': [] } :
-                        type === '.xls' || type === '.xlsx' ? { 'application/vnd.ms-excel': [], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [] } :
-                        { [type]: [] };
+                      type === '.doc' || type === '.docx' ? { 'application/msword': [], 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [] } :
+                      type === '.txt' ? { 'text/plain': [] } :
+                      type === '.xls' || type === '.xlsx' ? { 'application/vnd.ms-excel': [], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [] } :
+                      { [type]: [] };
       return { ...acc, ...mimeType };
     }, {}),
   });
@@ -90,14 +92,14 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
           />
           <p className="text-base text-gray-700">
             {isDragActive
-              ? 'Drop files here...'
-              : `Drag & drop files here, or click to select files`}
+              ? t('dropFilesHere')
+              : t('dragAndDrop')}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            Max {maxFiles} files, up to {formatFileSize(maxSize)} each
+            {t('maxFiles').replace('{count}', maxFiles.toString())} {formatFileSize(maxSize)}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            Accepted file types: {acceptedFileTypes.join(', ')}
+            {t('acceptedFileTypes')}: {acceptedFileTypes.join(', ')}
           </p>
         </div>
       </div>
@@ -105,7 +107,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
       {files.length > 0 && (
         <div className="mt-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">
-            Selected Files ({files.length}/{maxFiles})
+            {t('selectedFiles')} ({files.length}/{maxFiles})
           </h4>
           <ul className="space-y-2">
             {files.map((file, index) => (
@@ -131,7 +133,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
                   size="sm"
                   onClick={(e) => removeFile(e, file)}
                   className="text-gray-500 hover:text-error-500"
-                  aria-label="Remove file"
+                  aria-label={t('removeFile')}
                 >
                   <X size={16} />
                 </Button>
