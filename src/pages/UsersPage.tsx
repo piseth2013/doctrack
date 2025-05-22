@@ -95,6 +95,40 @@ const UsersPage: React.FC = () => {
     });
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    if (currentUserRole !== 'admin') {
+      setError('Only administrators can delete users');
+      return;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete user');
+      }
+
+      // Refresh the users list
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+    }
+  };
+
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -190,7 +224,15 @@ const UsersPage: React.FC = () => {
         <Card className="mb-6 bg-warning-50 border-warning-200">
           <CardBody className="flex items-center gap-3 text-warning-800">
             <ShieldAlert className="h-5 w-5" />
-            <p>Only administrators can add new users to the system.</p>
+            <p>Only administrators can manage users in the system.</p>
+          </CardBody>
+        </Card>
+      )}
+
+      {error && (
+        <Card className="mb-6 bg-error-50 border-error-200">
+          <CardBody className="text-error-700">
+            {error}
           </CardBody>
         </Card>
       )}
@@ -211,12 +253,6 @@ const UsersPage: React.FC = () => {
           
           <form onSubmit={handleAddUser}>
             <CardBody className="space-y-4">
-              {error && (
-                <div className="bg-error-50 text-error-700 p-4 rounded-md text-sm">
-                  {error}
-                </div>
-              )}
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="Email"
@@ -326,6 +362,8 @@ const UsersPage: React.FC = () => {
                   role={user.role}
                   department={user.department}
                   createdAt={user.created_at}
+                  onDelete={handleDeleteUser}
+                  currentUserRole={currentUserRole}
                 />
               ))}
             </div>

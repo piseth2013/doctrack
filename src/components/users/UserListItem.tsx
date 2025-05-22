@@ -1,6 +1,7 @@
 import React from 'react';
-import { Mail, User, Briefcase } from 'lucide-react';
+import { Mail, User, Briefcase, Trash2 } from 'lucide-react';
 import Avatar from '../ui/Avatar';
+import Button from '../ui/Button';
 import { format } from 'date-fns';
 
 interface UserListItemProps {
@@ -10,15 +11,26 @@ interface UserListItemProps {
   role: 'admin' | 'user';
   department: string | null;
   createdAt: string;
+  onDelete?: (userId: string) => void;
+  currentUserRole?: string | null;
 }
 
 const UserListItem: React.FC<UserListItemProps> = ({
+  id,
   email,
   fullName,
   role,
   department,
   createdAt,
+  onDelete,
+  currentUserRole,
 }) => {
+  const handleDelete = () => {
+    if (onDelete && window.confirm(`Are you sure you want to delete user ${fullName}?`)) {
+      onDelete(id);
+    }
+  };
+
   return (
     <div className="p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors">
       <div className="flex items-center space-x-4">
@@ -44,9 +56,21 @@ const UserListItem: React.FC<UserListItemProps> = ({
             )}
           </div>
         </div>
-        <div className="text-right text-xs text-gray-500">
-          <div>Member since</div>
-          <div>{format(new Date(createdAt), 'MMM d, yyyy')}</div>
+        <div className="flex items-center gap-4">
+          <div className="text-right text-xs text-gray-500">
+            <div>Member since</div>
+            <div>{format(new Date(createdAt), 'MMM d, yyyy')}</div>
+          </div>
+          {currentUserRole === 'admin' && role === 'user' && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleDelete}
+              leftIcon={<Trash2 size={14} />}
+            >
+              Remove
+            </Button>
+          )}
         </div>
       </div>
     </div>
