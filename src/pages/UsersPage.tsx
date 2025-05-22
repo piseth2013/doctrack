@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Plus, X, Users } from 'lucide-react';
+import { Search, Plus, X, Users, ShieldAlert } from 'lucide-react';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -31,6 +31,7 @@ const UsersPage: React.FC = () => {
   const [showAddUserForm, setShowAddUserForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [newUser, setNewUser] = useState<NewUserFormData>({
     email: '',
     full_name: '',
@@ -38,6 +39,23 @@ const UsersPage: React.FC = () => {
     department: '',
     password: '',
   });
+
+  useEffect(() => {
+    const fetchCurrentUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        setCurrentUserRole(profile?.role || null);
+      }
+    };
+
+    fetchCurrentUserRole();
+  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -78,6 +96,11 @@ const UsersPage: React.FC = () => {
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (currentUserRole !== 'admin') {
+      setError('You do not have permission to create new users. Only administrators can perform this action.');
+      return;
+    }
+
     if (!newUser.email || !newUser.full_name || !newUser.password) {
       setError('Email, full name, and password are required');
       return;
@@ -87,22 +110,27 @@ const UsersPage: React.FC = () => {
     setError('');
 
     try {
-      // 1. Create user with auth.signUp
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      // First create the user in Supabase Auth
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: newUser.email,
         password: newUser.password,
-        email_confirm: true,
+        options: {
+          data: {
+            full_name: newUser.full_name,
+            role: newUser.role,
+          },
+        },
       });
 
-      if (authError || !authData.user) {
-        throw new Error(authError?.message || 'Failed to create user account');
+      if (signUpError || !signUpData.user) {
+        throw new Error(signUpError?.message || 'Failed to create user account');
       }
 
-      // 2. Add user profile
+      // Then create the profile
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: authData.user.id,
+          id: signUpData.user.id,
           email: newUser.email,
           full_name: newUser.full_name,
           role: newUser.role,
@@ -113,7 +141,7 @@ const UsersPage: React.FC = () => {
         throw new Error(`Failed to create user profile: ${profileError.message}`);
       }
 
-      // 3. Refresh user list
+      // Refresh user list
       const { data: updatedUsers } = await supabase
         .from('profiles')
         .select('*')
@@ -121,7 +149,7 @@ const UsersPage: React.FC = () => {
 
       setUsers(updatedUsers || []);
       
-      // 4. Reset form
+      // Reset form
       setNewUser({
         email: '',
         full_name: '',
@@ -145,6 +173,14 @@ const UsersPage: React.FC = () => {
     (user.department && user.department.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader size="lg" text="Loading users..." />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -152,18 +188,29 @@ const UsersPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Users</h1>
           <p className="text-gray-600 mt-1">Manage system users and permissions</p>
         </div>
-        <div className="mt-4 md:mt-0">
-          <Button 
-            variant="primary" 
-            leftIcon={<Plus size={16} />}
-            onClick={() => setShowAddUserForm(true)}
-          >
-            Add User
-          </Button>
-        </div>
+        {currentUserRole === 'admin' && (
+          <div className="mt-4 md:mt-0">
+            <Button 
+              variant="primary" 
+              leftIcon={<Plus size={16} />}
+              onClick={() => setShowAddUserForm(true)}
+            >
+              Add User
+            </Button>
+          </div>
+        )}
       </div>
 
-      {showAddUserForm && (
+      {currentUserRole !== 'admin' && (
+        <Card className="mb-6 bg-warning-50 border-warning-200">
+          <CardBody className="flex items-center gap-3 text-warning-800">
+            <ShieldAlert className="h-5 w-5" />
+            <p>Only administrators can add new users to the system.</p>
+          </CardBody>
+        </Card>
+      )}
+
+      {showAddUserForm && currentUserRole === 'admin' && (
         <Card className="mb-6">
           <CardHeader className="flex flex-row items-center justify-between">
             <h2 className="text-lg font-medium text-gray-900">Add New User</h2>
@@ -282,38 +329,34 @@ const UsersPage: React.FC = () => {
             Users ({filteredUsers.length})
           </h2>
         </CardHeader>
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader size="lg" text="Loading users..." />
-          </div>
-        ) : (
-          <div>
-            {filteredUsers.length > 0 ? (
-              <div className="divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
-                  <UserListItem
-                    key={user.id}
-                    id={user.id}
-                    email={user.email}
-                    fullName={user.full_name}
-                    role={user.role}
-                    department={user.department}
-                    createdAt={user.created_at}
-                  />
-                ))}
-              </div>
-            ) : (
-              <CardBody className="py-12">
-                <div className="text-center">
-                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-                    <Users size={24} className="text-gray-600" />
-                  </div>
-                  <h3 className="mt-3 text-lg font-medium text-gray-900">No users found</h3>
-                  <p className="mt-2 text-sm text-gray-500">
-                    {searchQuery
-                      ? `No users matching "${searchQuery}"`
-                      : 'Get started by adding a new user'}
-                  </p>
+        <div>
+          {filteredUsers.length > 0 ? (
+            <div className="divide-y divide-gray-200">
+              {filteredUsers.map((user) => (
+                <UserListItem
+                  key={user.id}
+                  id={user.id}
+                  email={user.email}
+                  fullName={user.full_name}
+                  role={user.role}
+                  department={user.department}
+                  createdAt={user.created_at}
+                />
+              ))}
+            </div>
+          ) : (
+            <CardBody className="py-12">
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
+                  <Users size={24} className="text-gray-600" />
+                </div>
+                <h3 className="mt-3 text-lg font-medium text-gray-900">No users found</h3>
+                <p className="mt-2 text-sm text-gray-500">
+                  {searchQuery
+                    ? `No users matching "${searchQuery}"`
+                    : 'Get started by adding a new user'}
+                </p>
+                {currentUserRole === 'admin' && (
                   <div className="mt-6">
                     <Button 
                       variant="primary" 
@@ -323,11 +366,11 @@ const UsersPage: React.FC = () => {
                       Add User
                     </Button>
                   </div>
-                </div>
-              </CardBody>
-            )}
-          </div>
-        )}
+                )}
+              </div>
+            </CardBody>
+          )}
+        </div>
       </Card>
     </div>
   );
