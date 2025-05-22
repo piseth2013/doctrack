@@ -5,6 +5,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { signIn } from '../lib/supabase';
 import { useAuth } from '../components/auth/AuthWrapper';
+import { useTranslation } from '../lib/translations';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ const LoginPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
+  const t = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +51,7 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to DocTrack
+          {t('signIn')} DocTrack
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Document management and tracking system
@@ -60,7 +62,7 @@ const LoginPage: React.FC = () => {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <Input
-              label="Email address"
+              label={t('email')}
               type="email"
               id="email"
               value={email}
@@ -71,7 +73,7 @@ const LoginPage: React.FC = () => {
             />
 
             <Input
-              label="Password"
+              label={t('password')}
               type="password"
               id="password"
               value={password}
@@ -95,7 +97,7 @@ const LoginPage: React.FC = () => {
                 fullWidth
                 className="py-2.5"
               >
-                Sign in
+                {t('signIn')}
               </Button>
             </div>
           </form>
@@ -107,7 +109,7 @@ const LoginPage: React.FC = () => {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  Demo credentials
+                  {t('demoCredentials')}
                 </span>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, X, Clock } from 'lucide-react';
 import Button from '../ui/Button';
+import { useTranslation } from '../../lib/translations';
 
 interface StatusUpdaterProps {
   currentStatus: 'pending' | 'approved' | 'rejected';
@@ -15,6 +16,8 @@ const StatusUpdater: React.FC<StatusUpdaterProps> = ({
   isLoading,
   disabled = false,
 }) => {
+  const t = useTranslation();
+
   return (
     <div className="flex flex-col sm:flex-row gap-2">
       <Button
@@ -25,7 +28,7 @@ const StatusUpdater: React.FC<StatusUpdaterProps> = ({
         disabled={disabled || currentStatus === 'approved' || isLoading}
         className={`${currentStatus === 'approved' ? 'opacity-50' : ''}`}
       >
-        Approve
+        {t('approved')}
       </Button>
       <Button
         variant="danger"
@@ -35,7 +38,7 @@ const StatusUpdater: React.FC<StatusUpdaterProps> = ({
         disabled={disabled || currentStatus === 'rejected' || isLoading}
         className={`${currentStatus === 'rejected' ? 'opacity-50' : ''}`}
       >
-        Reject
+        {t('rejected')}
       </Button>
       <Button
         variant="warning"
@@ -45,7 +48,7 @@ const StatusUpdater: React.FC<StatusUpdaterProps> = ({
         disabled={disabled || currentStatus === 'pending' || isLoading}
         className={`${currentStatus === 'pending' ? 'opacity-50' : ''}`}
       >
-        Set Pending
+        {t('pending')}
       </Button>
     </div>
   );
