@@ -6,6 +6,7 @@ import Input from '../components/ui/Input';
 import UserListItem from '../components/users/UserListItem';
 import Loader from '../components/ui/Loader';
 import { supabase } from '../lib/supabase';
+import { useTranslation } from '../lib/translations';
 
 interface User {
   id: string;
@@ -32,6 +33,7 @@ const UsersPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const t = useTranslation();
   const [newUser, setNewUser] = useState<NewUserFormData>({
     email: '',
     full_name: '',
@@ -121,7 +123,6 @@ const UsersPage: React.FC = () => {
         throw new Error(error.error || 'Failed to delete user');
       }
 
-      // Refresh the users list
       await fetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -166,10 +167,8 @@ const UsersPage: React.FC = () => {
         throw new Error(result.error || 'Failed to create user');
       }
 
-      // Refresh user list
       await fetchUsers();
       
-      // Reset form
       setNewUser({
         email: '',
         full_name: '',
@@ -195,7 +194,7 @@ const UsersPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Loader size="lg" text="Loading users..." />
+        <Loader size="lg" text={t('loading')} />
       </div>
     );
   }
@@ -204,8 +203,8 @@ const UsersPage: React.FC = () => {
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-          <p className="text-gray-600 mt-1">Manage system users and permissions</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('users')}</h1>
+          <p className="text-gray-600 mt-1">{t('manageSystemUsers')}</p>
         </div>
         {currentUserRole === 'admin' && (
           <div className="mt-4 md:mt-0">
@@ -214,7 +213,7 @@ const UsersPage: React.FC = () => {
               leftIcon={<Plus size={16} />}
               onClick={() => setShowAddUserForm(true)}
             >
-              Add User
+              {t('addUser')}
             </Button>
           </div>
         )}
@@ -240,7 +239,7 @@ const UsersPage: React.FC = () => {
       {showAddUserForm && currentUserRole === 'admin' && (
         <Card className="mb-6">
           <CardHeader className="flex flex-row items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900">Add New User</h2>
+            <h2 className="text-lg font-medium text-gray-900">{t('addUser')}</h2>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -255,7 +254,7 @@ const UsersPage: React.FC = () => {
             <CardBody className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  label="Email"
+                  label={t('email')}
                   name="email"
                   type="email"
                   value={newUser.email}
@@ -265,7 +264,7 @@ const UsersPage: React.FC = () => {
                 />
 
                 <Input
-                  label="Full Name"
+                  label={t('fullName')}
                   name="full_name"
                   value={newUser.full_name}
                   onChange={handleInputChange}
@@ -277,7 +276,7 @@ const UsersPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                    Role
+                    {t('role')}
                   </label>
                   <select
                     id="role"
@@ -286,13 +285,13 @@ const UsersPage: React.FC = () => {
                     onChange={handleInputChange}
                     className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   >
-                    <option value="user">User</option>
-                    <option value="admin">Administrator</option>
+                    <option value="user">{t('user')}</option>
+                    <option value="admin">{t('administrator')}</option>
                   </select>
                 </div>
 
                 <Input
-                  label="Department (Optional)"
+                  label={t('department')}
                   name="department"
                   value={newUser.department}
                   onChange={handleInputChange}
@@ -301,7 +300,7 @@ const UsersPage: React.FC = () => {
               </div>
 
               <Input
-                label="Password"
+                label={t('password')}
                 name="password"
                 type="password"
                 value={newUser.password}
@@ -317,7 +316,7 @@ const UsersPage: React.FC = () => {
                 variant="outline" 
                 onClick={() => setShowAddUserForm(false)}
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button 
                 type="submit" 
@@ -325,7 +324,7 @@ const UsersPage: React.FC = () => {
                 isLoading={isSubmitting}
                 disabled={isSubmitting}
               >
-                Add User
+                {t('addUser')}
               </Button>
             </CardFooter>
           </form>
@@ -335,7 +334,7 @@ const UsersPage: React.FC = () => {
       <Card className="mb-6">
         <CardBody className="p-4">
           <Input
-            placeholder="Search users..."
+            placeholder={t('searchUsers')}
             value={searchQuery}
             onChange={handleSearchChange}
             leftIcon={<Search size={18} />}
@@ -347,7 +346,7 @@ const UsersPage: React.FC = () => {
       <Card>
         <CardHeader>
           <h2 className="text-lg font-medium text-gray-900">
-            Users ({filteredUsers.length})
+            {t('users')} ({filteredUsers.length})
           </h2>
         </CardHeader>
         <div>
@@ -373,11 +372,11 @@ const UsersPage: React.FC = () => {
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
                   <Users size={24} className="text-gray-600" />
                 </div>
-                <h3 className="mt-3 text-lg font-medium text-gray-900">No users found</h3>
+                <h3 className="mt-3 text-lg font-medium text-gray-900">{t('noUsersFound')}</h3>
                 <p className="mt-2 text-sm text-gray-500">
                   {searchQuery
-                    ? `No users matching "${searchQuery}"`
-                    : 'Get started by adding a new user'}
+                    ? `${t('noUsersFound')} "${searchQuery}"`
+                    : t('addFirstUser')}
                 </p>
                 {currentUserRole === 'admin' && (
                   <div className="mt-6">
@@ -386,7 +385,7 @@ const UsersPage: React.FC = () => {
                       leftIcon={<Plus size={16} />}
                       onClick={() => setShowAddUserForm(true)}
                     >
-                      Add User
+                      {t('addUser')}
                     </Button>
                   </div>
                 )}
