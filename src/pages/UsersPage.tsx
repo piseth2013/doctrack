@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Plus, X } from 'lucide-react';
+import { Search, Plus, X, Users } from 'lucide-react';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -305,7 +305,7 @@ const UsersPage: React.FC = () => {
               <CardBody className="py-12">
                 <div className="text-center">
                   <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-                    <Users className="h-6 w-6 text-gray-600" />
+                    <Users size={24} className="text-gray-600" />
                   </div>
                   <h3 className="mt-3 text-lg font-medium text-gray-900">No users found</h3>
                   <p className="mt-2 text-sm text-gray-500">
