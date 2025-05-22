@@ -7,6 +7,7 @@ import Input from '../components/ui/Input';
 import DocumentUploader from '../components/documents/DocumentUploader';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../components/auth/AuthWrapper';
+import { useTranslation } from '../lib/translations';
 
 interface FileWithPreview extends File {
   preview?: string;
@@ -15,6 +16,7 @@ interface FileWithPreview extends File {
 const NewDocumentPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const t = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [files, setFiles] = useState<FileWithPreview[]>([]);
@@ -102,19 +104,19 @@ const NewDocumentPage: React.FC = () => {
           leftIcon={<ArrowLeft size={16} />}
           onClick={() => navigate('/documents')}
         >
-          Back to Documents
+          {t('backToDocuments')}
         </Button>
       </div>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Upload New Document</h1>
-        <p className="text-gray-600 mt-1">Add a new document to the system</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('uploadNewDocument')}</h1>
+        <p className="text-gray-600 mt-1">{t('newDocument')}</p>
       </div>
 
       <Card>
         <form onSubmit={handleSubmit}>
           <CardHeader>
-            <h2 className="text-lg font-medium text-gray-900">Document Information</h2>
+            <h2 className="text-lg font-medium text-gray-900">{t('documentInformation')}</h2>
           </CardHeader>
 
           <CardBody className="space-y-6">
@@ -125,18 +127,18 @@ const NewDocumentPage: React.FC = () => {
             )}
 
             <Input
-              label="Document Title"
+              label={t('documentTitle')}
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter document title"
+              placeholder={t('documentTitle')}
               required
               fullWidth
             />
 
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description (Optional)
+                {t('description')}
               </label>
               <textarea
                 id="description"
@@ -144,13 +146,13 @@ const NewDocumentPage: React.FC = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
                 className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                placeholder="Enter document description"
+                placeholder={t('description')}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Document Files
+                {t('documentFiles')}
               </label>
               <DocumentUploader onFilesSelected={setFiles} />
             </div>
@@ -164,7 +166,7 @@ const NewDocumentPage: React.FC = () => {
               isLoading={isSubmitting}
               disabled={isSubmitting}
             >
-              Upload Document
+              {t('uploadNewDocument')}
             </Button>
           </CardFooter>
         </form>
