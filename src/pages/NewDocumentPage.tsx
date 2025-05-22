@@ -138,7 +138,7 @@ const NewDocumentPage: React.FC = () => {
 
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('description')}
+                textarea
               </label>
               <textarea
                 id="description"
