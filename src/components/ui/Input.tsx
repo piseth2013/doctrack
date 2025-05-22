@@ -9,7 +9,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   rightIcon?: React.ReactNode;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
+export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, className, fullWidth = false, leftIcon, rightIcon, ...props }, ref) => {
     return (
       <div className={`mb-4 ${fullWidth ? 'w-full' : ''}`}>
