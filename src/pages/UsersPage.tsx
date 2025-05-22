@@ -60,10 +60,12 @@ const UsersPage: React.FC = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
+
+      const { data, error } = await query;
 
       if (error) {
         throw error;
@@ -141,7 +143,6 @@ const UsersPage: React.FC = () => {
         department: '',
         password: '',
       });
-
       setShowAddUserForm(false);
     } catch (error) {
       console.error('Error adding user:', error);
