@@ -69,9 +69,9 @@ const NewDocumentPage: React.FC = () => {
       }
 
       // 2. Upload files to Storage
-      const documentId = document.id;
+      const documentId2 = document.id;
       const filePromises = files.map(async (file) => {
-        const filePath = `documents/${documentId}/${file.name}`;
+        const filePath = `documents/${documentId2}/${file.name}`;
         const { error: uploadError } = await supabase.storage
           .from('document-files')
           .upload(filePath, file);
@@ -84,7 +84,7 @@ const NewDocumentPage: React.FC = () => {
         const { error: fileRecordError } = await supabase
           .from('document_files')
           .insert({
-            document_id: documentId,
+            document_id: documentId2,
             file_path: filePath,
             file_name: file.name,
             file_type: file.type,
@@ -99,7 +99,7 @@ const NewDocumentPage: React.FC = () => {
       await Promise.all(filePromises);
       
       // Success - navigate to document page
-      navigate(`/documents/${documentId}`);
+      navigate(`/documents/${documentId2}`);
     } catch (error) {
       console.error('Error creating document:', error);
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');
