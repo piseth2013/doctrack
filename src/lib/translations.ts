@@ -21,8 +21,48 @@ export const translations = {
     users: 'Users',
     settings: 'Settings',
     general: 'General',
+    organization: 'Organization',
+    office: 'Office',
+    staff: 'Staff',
+    position: 'Position',
     signOut: 'Sign out',
     comingSoon: 'More settings coming soon...',
+
+    // Organization
+    offices: 'Offices',
+    addOffice: 'Add Office',
+    editOffice: 'Edit Office',
+    deleteOffice: 'Delete Office',
+    officeName: 'Office Name',
+    officeLocation: 'Location',
+    officePhone: 'Phone Number',
+    officeEmail: 'Email',
+    noOfficesFound: 'No offices found',
+    
+    positions: 'Positions',
+    addPosition: 'Add Position',
+    editPosition: 'Edit Position',
+    deletePosition: 'Delete Position',
+    positionName: 'Position Name',
+    positionDescription: 'Description',
+    noPositionsFound: 'No positions found',
+    
+    staff: 'Staff',
+    addStaff: 'Add Staff',
+    editStaff: 'Edit Staff',
+    deleteStaff: 'Delete Staff',
+    staffName: 'Staff Name',
+    staffPosition: 'Position',
+    staffOffice: 'Office',
+    noStaffFound: 'No staff found',
+    
+    // Common
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    edit: 'Edit',
+    confirmDelete: 'Are you sure you want to delete this {item}?',
+    searchPlaceholder: 'Search {item}...',
 
     // Dashboard
     overview: 'Overview of your document management system',
@@ -39,19 +79,6 @@ export const translations = {
     totalUsers: 'Total Users',
     noDocumentsFound: 'No documents found',
     createFirstDocument: 'Create your first document',
-
-    // Documents
-    documentTitle: 'Document Title',
-    description: 'Description',
-    status: 'Status',
-    createdBy: 'Created by',
-    createdOn: 'Created on',
-    lastUpdated: 'Last updated',
-    documentFiles: 'Document Files',
-    noFilesAttached: 'No files attached to this document',
-    documentInformation: 'Document Information',
-    deleteDocument: 'Delete Document',
-    searchDocuments: 'Search documents...',
 
     // Users
     manageSystemUsers: 'Manage system users and permissions',
@@ -71,10 +98,9 @@ export const translations = {
     noPermission: 'You do not have permission to create new users. Only administrators can perform this action.',
     requiredFields: 'Email, full name, and password are required',
     departmentOptional: 'Department (Optional)',
-    cancel: 'Cancel',
     noMatchingUsers: 'No users matching "{query}"',
     getStartedAddUser: 'Get started by adding a new user',
-    confirmDelete: 'Are you sure you want to delete user {name}?',
+    confirmDeleteUser: 'Are you sure you want to delete user {name}?',
     loadingUsers: 'Loading users...',
 
     // Auth
@@ -89,8 +115,48 @@ export const translations = {
     users: 'អ្នកប្រើប្រាស់',
     settings: 'ការកំណត់',
     general: 'ទូទៅ',
+    organization: 'អង្គការ',
+    office: 'ការិយាល័យ',
+    staff: 'បុគ្គលិក',
+    position: 'តំណែង',
     signOut: 'ចាកចេញ',
     comingSoon: 'ការកំណត់បន្ថែមនឹងមកដល់ឆាប់ៗនេះ...',
+
+    // Organization
+    offices: 'ការិយាល័យ',
+    addOffice: 'បន្ថែមការិយាល័យ',
+    editOffice: 'កែសម្រួលការិយាល័យ',
+    deleteOffice: 'លុបការិយាល័យ',
+    officeName: 'ឈ្មោះការិយាល័យ',
+    officeLocation: 'ទីតាំង',
+    officePhone: 'លេខទូរស័ព្ទ',
+    officeEmail: 'អ៊ីមែល',
+    noOfficesFound: 'រកមិនឃើញការិយាល័យ',
+    
+    positions: 'តំណែង',
+    addPosition: 'បន្ថែមតំណែង',
+    editPosition: 'កែសម្រួលតំណែង',
+    deletePosition: 'លុបតំណែង',
+    positionName: 'ឈ្មោះតំណែង',
+    positionDescription: 'ការពិពណ៌នា',
+    noPositionsFound: 'រកមិនឃើញតំណែង',
+    
+    staff: 'បុគ្គលិក',
+    addStaff: 'បន្ថែមបុគ្គលិក',
+    editStaff: 'កែសម្រួលបុគ្គលិក',
+    deleteStaff: 'លុបបុគ្គលិក',
+    staffName: 'ឈ្មោះបុគ្គលិក',
+    staffPosition: 'តំណែង',
+    staffOffice: 'ការិយាល័យ',
+    noStaffFound: 'រកមិនឃើញបុគ្គលិក',
+    
+    // Common
+    save: 'រក្សាទុក',
+    cancel: 'បោះបង់',
+    delete: 'លុប',
+    edit: 'កែសម្រួល',
+    confirmDelete: 'តើអ្នកប្រាកដជាចង់លុប{item}នេះមែនទេ?',
+    searchPlaceholder: 'ស្វែងរក{item}...',
 
     // Dashboard
     overview: 'ទិដ្ឋភាពទូទៅនៃប្រព័ន្ធគ្រប់គ្រងឯកសាររបស់អ្នក',
@@ -107,19 +173,6 @@ export const translations = {
     totalUsers: 'អ្នកប្រើប្រាស់សរុប',
     noDocumentsFound: 'រកមិនឃើញឯកសារ',
     createFirstDocument: 'បង្កើតឯកសារដំបូងរបស់អ្នក',
-
-    // Documents
-    documentTitle: 'ចំណងជើងឯកសារ',
-    description: 'ការពិពណ៌នា',
-    status: 'ស្ថានភាព',
-    createdBy: 'បង្កើតដោយ',
-    createdOn: 'បង្កើតនៅ',
-    lastUpdated: 'ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ',
-    documentFiles: 'ឯកសារភ្ជាប់',
-    noFilesAttached: 'គ្មានឯកសារភ្ជាប់',
-    documentInformation: 'ព័ត៌មានឯកសារ',
-    deleteDocument: 'លុបឯកសារ',
-    searchDocuments: 'ស្វែងរកឯកសារ...',
 
     // Users
     manageSystemUsers: 'គ្រប់គ្រងអ្នកប្រើប្រាស់និងសិទ្ធិ',
@@ -139,10 +192,9 @@ export const translations = {
     noPermission: 'អ្នកមិនមានសិទ្ធិបង្កើតអ្នកប្រើប្រាស់ថ្មីទេ។ មានតែអ្នកគ្រប់គ្រងទេដែលអាចធ្វើសកម្មភាពនេះបាន។',
     requiredFields: 'អ៊ីមែល ឈ្មោះពេញ និងពាក្យសម្ងាត់ត្រូវបានទាមទារ',
     departmentOptional: 'នាយកដ្ឋាន (ជាជម្រើស)',
-    cancel: 'បោះបង់',
     noMatchingUsers: 'មិនមានអ្នកប្រើប្រាស់ដែលត្រូវនឹង "{query}" ទេ',
     getStartedAddUser: 'ចាប់ផ្តើមដោយបន្ថែមអ្នកប្រើប្រាស់ថ្មី',
-    confirmDelete: 'តើអ្នកប្រាកដថាចង់លុបអ្នកប្រើប្រាស់ {name} ឬ?',
+    confirmDeleteUser: 'តើអ្នកប្រាកដថាចង់លុបអ្នកប្រើប្រាស់ {name} ឬ?',
     loadingUsers: 'កំពុងផ្ទុកអ្នកប្រើប្រាស់...',
 
     // Auth

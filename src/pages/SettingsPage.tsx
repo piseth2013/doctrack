@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
-import { Users, Settings as SettingsIcon } from 'lucide-react';
+import { Users, Settings as SettingsIcon, Building2, Users2, Briefcase } from 'lucide-react';
 import { useTranslation } from '../lib/translations';
 import UsersPage from './UsersPage';
+import OrganizationPage from './organization/OrganizationPage';
+
+type SettingsSection = 'users' | 'general' | 'organization';
 
 const SettingsPage: React.FC = () => {
   const t = useTranslation();
-  const [activeSection, setActiveSection] = useState<'users' | 'general'>('users');
+  const [activeSection, setActiveSection] = useState<SettingsSection>('users');
 
   const menuItems = [
     {
       id: 'users',
       label: t('users'),
       icon: <Users size={20} />,
+    },
+    {
+      id: 'organization',
+      label: t('organization'),
+      icon: <Building2 size={20} />,
     },
     {
       id: 'general',
@@ -60,6 +68,10 @@ const SettingsPage: React.FC = () => {
                 <UsersPage />
               </CardBody>
             </Card>
+          )}
+
+          {activeSection === 'organization' && (
+            <OrganizationPage />
           )}
 
           {activeSection === 'general' && (
