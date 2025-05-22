@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, Search, Plus } from 'lucide-react';
+import { Filter, Search, Plus, FileText } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import DocumentCard from '../components/documents/DocumentCard';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Loader from '../components/ui/Loader';
 import { supabase } from '../lib/supabase';
+import { useTranslation } from '../lib/translations';
 
 interface Document {
   id: string;
@@ -27,6 +28,7 @@ const DocumentsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const statusFilter = searchParams.get('status') || 'all';
+  const t = useTranslation();
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -86,13 +88,13 @@ const DocumentsPage: React.FC = () => {
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
-          <p className="text-gray-600 mt-1">Manage and track all your documents</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('documents')}</h1>
+          <p className="text-gray-600 mt-1">{t('manageSystemUsers')}</p>
         </div>
         <div className="mt-4 md:mt-0">
           <Link to="/documents/new">
             <Button variant="primary" leftIcon={<Plus size={16} />}>
-              New Document
+              {t('newDocument')}
             </Button>
           </Link>
         </div>
@@ -103,7 +105,7 @@ const DocumentsPage: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Search documents..."
+                placeholder={t('searchDocuments')}
                 value={searchQuery}
                 onChange={handleSearchChange}
                 leftIcon={<Search size={18} />}
@@ -113,7 +115,7 @@ const DocumentsPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <div className="text-gray-500 flex items-center">
                 <Filter size={16} className="mr-2" />
-                <span className="text-sm">Status:</span>
+                <span className="text-sm">{t('status')}:</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -124,7 +126,7 @@ const DocumentsPage: React.FC = () => {
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  All
+                  {t('documents')}
                 </button>
                 <button
                   onClick={() => handleStatusFilterChange('pending')}
@@ -134,7 +136,7 @@ const DocumentsPage: React.FC = () => {
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  Pending
+                  {t('pending')}
                 </button>
                 <button
                   onClick={() => handleStatusFilterChange('approved')}
@@ -144,7 +146,7 @@ const DocumentsPage: React.FC = () => {
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  Approved
+                  {t('approved')}
                 </button>
                 <button
                   onClick={() => handleStatusFilterChange('rejected')}
@@ -154,7 +156,7 @@ const DocumentsPage: React.FC = () => {
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  Rejected
+                  {t('rejected')}
                 </button>
               </div>
             </div>
@@ -164,7 +166,7 @@ const DocumentsPage: React.FC = () => {
 
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <Loader size="lg" text="Loading documents..." />
+          <Loader size="lg" text={t('loading')} />
         </div>
       ) : (
         <div>
@@ -190,16 +192,16 @@ const DocumentsPage: React.FC = () => {
                   <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
                     <FileText className="h-6 w-6 text-gray-600" />
                   </div>
-                  <h3 className="mt-3 text-lg font-medium text-gray-900">No documents found</h3>
+                  <h3 className="mt-3 text-lg font-medium text-gray-900">{t('noDocumentsFound')}</h3>
                   <p className="mt-2 text-sm text-gray-500">
                     {statusFilter !== 'all'
-                      ? `No ${statusFilter} documents found. Try changing the filter or search query.`
-                      : 'Get started by creating a new document.'}
+                      ? `${t('noDocumentsFound')}. ${t('tryChangingFilter')}`
+                      : t('createFirstDocument')}
                   </p>
                   <div className="mt-6">
                     <Link to="/documents/new">
                       <Button variant="primary" leftIcon={<Plus size={16} />}>
-                        New Document
+                        {t('newDocument')}
                       </Button>
                     </Link>
                   </div>
