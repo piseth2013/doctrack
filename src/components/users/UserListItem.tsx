@@ -1,8 +1,9 @@
 import React from 'react';
-import { Mail, User, Briefcase, Trash2 } from 'lucide-react';
+import { Mail, User, Briefcase, Trash2, Edit } from 'lucide-react';
 import Avatar from '../ui/Avatar';
 import Button from '../ui/Button';
 import { format } from 'date-fns';
+import { useTranslation } from '../../lib/translations';
 
 interface UserListItemProps {
   id: string;
@@ -12,6 +13,7 @@ interface UserListItemProps {
   department: string | null;
   createdAt: string;
   onDelete?: (userId: string) => void;
+  onEdit?: (userId: string) => void;
   currentUserRole?: string | null;
 }
 
@@ -23,10 +25,13 @@ const UserListItem: React.FC<UserListItemProps> = ({
   department,
   createdAt,
   onDelete,
+  onEdit,
   currentUserRole,
 }) => {
+  const t = useTranslation();
+
   const handleDelete = () => {
-    if (onDelete && window.confirm(`Are you sure you want to delete user ${fullName}?`)) {
+    if (onDelete && window.confirm(t('confirmDeleteUser').replace('{name}', fullName))) {
       onDelete(id);
     }
   };
@@ -46,7 +51,7 @@ const UserListItem: React.FC<UserListItemProps> = ({
               role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
             }`}>
               <User size={12} className="mr-1" />
-              {role === 'admin' ? 'Administrator' : 'User'}
+              {role === 'admin' ? t('administrator') : t('user')}
             </span>
             {department && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -58,18 +63,30 @@ const UserListItem: React.FC<UserListItemProps> = ({
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right text-xs text-gray-500">
-            <div>Member since</div>
+            <div>{t('memberSince')}</div>
             <div>{format(new Date(createdAt), 'MMM d, yyyy')}</div>
           </div>
-          {currentUserRole === 'admin' && role === 'user' && (
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleDelete}
-              leftIcon={<Trash2 size={14} />}
-            >
-              Remove
-            </Button>
+          {currentUserRole === 'admin' && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit?.(id)}
+                leftIcon={<Edit size={14} />}
+              >
+                {t('edit')}
+              </Button>
+              {role !== 'admin' && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={handleDelete}
+                  leftIcon={<Trash2 size={14} />}
+                >
+                  {t('remove')}
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>

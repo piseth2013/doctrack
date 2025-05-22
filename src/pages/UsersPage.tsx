@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, Search, Plus, Users, ShieldAlert } from 'lucide-react';
+import { Search, Plus, X, Users, ShieldAlert } from 'lucide-react';
 import { Card, CardBody, CardHeader, CardFooter } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -17,30 +17,32 @@ interface User {
   created_at: string;
 }
 
-interface NewUserFormData {
+interface UserFormData {
   email: string;
   full_name: string;
   role: 'admin' | 'user';
   department: string;
-  password: string;
+  password?: string;
 }
+
+const initialFormData: UserFormData = {
+  email: '',
+  full_name: '',
+  role: 'user',
+  department: '',
+};
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showAddUserForm, setShowAddUserForm] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [formData, setFormData] = useState<UserFormData>(initialFormData);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const t = useTranslation();
-  const [newUser, setNewUser] = useState<NewUserFormData>({
-    email: '',
-    full_name: '',
-    role: 'user',
-    department: '',
-    password: '',
-  });
 
   useEffect(() => {
     const fetchCurrentUserRole = async () => {
@@ -91,22 +93,29 @@ const UsersPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setNewUser({
-      ...newUser,
+    setFormData({
+      ...formData,
       [name]: value,
     });
+  };
+
+  const handleEdit = (userId: string) => {
+    const userToEdit = users.find(u => u.id === userId);
+    if (!userToEdit) return;
+
+    setFormData({
+      email: userToEdit.email,
+      full_name: userToEdit.full_name,
+      role: userToEdit.role,
+      department: userToEdit.department || '',
+    });
+    setEditingUserId(userId);
+    setShowForm(true);
   };
 
   const handleDeleteUser = async (userId: string) => {
     if (currentUserRole !== 'admin') {
       setError(t('noPermission'));
-      return;
-    }
-
-    const userToDelete = users.find(u => u.id === userId);
-    if (!userToDelete) return;
-
-    if (!confirm(t('confirmDelete').replace('{name}', userToDelete.full_name))) {
       return;
     }
 
@@ -137,7 +146,7 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  const handleAddUser = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (currentUserRole !== 'admin') {
@@ -145,7 +154,7 @@ const UsersPage: React.FC = () => {
       return;
     }
 
-    if (!newUser.email || !newUser.full_name || !newUser.password) {
+    if (!formData.email || !formData.full_name) {
       setError(t('requiredFields'));
       return;
     }
@@ -159,33 +168,44 @@ const UsersPage: React.FC = () => {
         throw new Error('No authentication token found');
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newUser),
-      });
+      if (editingUserId) {
+        // Update existing user
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            email: formData.email,
+            full_name: formData.full_name,
+            role: formData.role,
+            department: formData.department || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingUserId);
 
-      const result = await response.json();
+        if (updateError) throw updateError;
+      } else {
+        // Create new user
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to create user');
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to create user');
+        }
       }
 
       await fetchUsers();
-      
-      setNewUser({
-        email: '',
-        full_name: '',
-        role: 'user',
-        department: '',
-        password: '',
-      });
-      setShowAddUserForm(false);
+      setFormData(initialFormData);
+      setShowForm(false);
+      setEditingUserId(null);
     } catch (error) {
-      console.error('Error adding user:', error);
+      console.error('Error saving user:', error);
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
@@ -230,44 +250,55 @@ const UsersPage: React.FC = () => {
           <Button 
             variant="primary" 
             leftIcon={<Plus size={16} />}
-            onClick={() => setShowAddUserForm(true)}
+            onClick={() => {
+              setFormData(initialFormData);
+              setEditingUserId(null);
+              setShowForm(true);
+            }}
           >
             {t('addUser')}
           </Button>
         )}
       </div>
 
-      {showAddUserForm && currentUserRole === 'admin' && (
+      {showForm && currentUserRole === 'admin' && (
         <Card className="mb-6">
           <CardHeader className="flex flex-row items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900">{t('addUser')}</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              {editingUserId ? t('edit') : t('addUser')}
+            </h2>
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => setShowAddUserForm(false)}
+              onClick={() => {
+                setShowForm(false);
+                setEditingUserId(null);
+                setFormData(initialFormData);
+              }}
               className="text-gray-500"
             >
               <X size={18} />
             </Button>
           </CardHeader>
           
-          <form onSubmit={handleAddUser}>
+          <form onSubmit={handleSubmit}>
             <CardBody className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label={t('email')}
                   name="email"
                   type="email"
-                  value={newUser.email}
+                  value={formData.email}
                   onChange={handleInputChange}
                   required
                   fullWidth
+                  disabled={!!editingUserId}
                 />
 
                 <Input
                   label={t('fullName')}
                   name="full_name"
-                  value={newUser.full_name}
+                  value={formData.full_name}
                   onChange={handleInputChange}
                   required
                   fullWidth
@@ -282,7 +313,7 @@ const UsersPage: React.FC = () => {
                   <select
                     id="role"
                     name="role"
-                    value={newUser.role}
+                    value={formData.role}
                     onChange={handleInputChange}
                     className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   >
@@ -294,28 +325,34 @@ const UsersPage: React.FC = () => {
                 <Input
                   label={t('departmentOptional')}
                   name="department"
-                  value={newUser.department}
+                  value={formData.department}
                   onChange={handleInputChange}
                   fullWidth
                 />
               </div>
 
-              <Input
-                label={t('password')}
-                name="password"
-                type="password"
-                value={newUser.password}
-                onChange={handleInputChange}
-                required
-                fullWidth
-              />
+              {!editingUserId && (
+                <Input
+                  label={t('password')}
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  fullWidth
+                />
+              )}
             </CardBody>
             
             <CardFooter className="flex justify-end space-x-3">
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setShowAddUserForm(false)}
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingUserId(null);
+                  setFormData(initialFormData);
+                }}
               >
                 {t('cancel')}
               </Button>
@@ -325,7 +362,7 @@ const UsersPage: React.FC = () => {
                 isLoading={isSubmitting}
                 disabled={isSubmitting}
               >
-                {t('addUser')}
+                {editingUserId ? t('save') : t('addUser')}
               </Button>
             </CardFooter>
           </form>
@@ -357,6 +394,7 @@ const UsersPage: React.FC = () => {
                 department={user.department}
                 createdAt={user.created_at}
                 onDelete={handleDeleteUser}
+                onEdit={handleEdit}
                 currentUserRole={currentUserRole}
               />
             ))}
@@ -378,7 +416,11 @@ const UsersPage: React.FC = () => {
                   <Button 
                     variant="primary" 
                     leftIcon={<Plus size={16} />}
-                    onClick={() => setShowAddUserForm(true)}
+                    onClick={() => {
+                      setFormData(initialFormData);
+                      setEditingUserId(null);
+                      setShowForm(true);
+                    }}
                   >
                     {t('addUser')}
                   </Button>
