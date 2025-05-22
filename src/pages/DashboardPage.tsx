@@ -5,6 +5,7 @@ import StatusBadge from '../components/ui/StatusBadge';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import Loader from '../components/ui/Loader';
+import { useTranslation } from '../lib/translations';
 
 interface DocumentCounts {
   total: number;
@@ -30,6 +31,7 @@ const DashboardPage: React.FC = () => {
   const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([]);
   const [userCount, setUserCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const t = useTranslation();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -97,8 +99,8 @@ const DashboardPage: React.FC = () => {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Overview of your document management system</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('dashboard')}</h1>
+        <p className="text-gray-600 mt-1">{t('overview')}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -108,7 +110,7 @@ const DashboardPage: React.FC = () => {
               <FileText size={24} />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Total Documents</p>
+              <p className="text-white/80 text-sm">{t('totalDocuments')}</p>
               <h3 className="text-2xl font-bold">{documentCounts.total}</h3>
             </div>
           </CardBody>
@@ -120,7 +122,7 @@ const DashboardPage: React.FC = () => {
               <Clock size={24} />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Pending</p>
+              <p className="text-white/80 text-sm">{t('pending')}</p>
               <h3 className="text-2xl font-bold">{documentCounts.pending}</h3>
             </div>
           </CardBody>
@@ -132,7 +134,7 @@ const DashboardPage: React.FC = () => {
               <CheckCircle size={24} />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Approved</p>
+              <p className="text-white/80 text-sm">{t('approved')}</p>
               <h3 className="text-2xl font-bold">{documentCounts.approved}</h3>
             </div>
           </CardBody>
@@ -144,7 +146,7 @@ const DashboardPage: React.FC = () => {
               <XCircle size={24} />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Rejected</p>
+              <p className="text-white/80 text-sm">{t('rejected')}</p>
               <h3 className="text-2xl font-bold">{documentCounts.rejected}</h3>
             </div>
           </CardBody>
@@ -155,12 +157,12 @@ const DashboardPage: React.FC = () => {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">Recent Documents</h2>
+              <h2 className="text-lg font-medium text-gray-900">{t('recentDocuments')}</h2>
               <Link 
                 to="/documents" 
                 className="text-sm text-primary-600 hover:text-primary-800"
               >
-                View all
+                {t('documents')}
               </Link>
             </CardHeader>
             <div className="divide-y divide-gray-200">
@@ -189,12 +191,12 @@ const DashboardPage: React.FC = () => {
                 ))
               ) : (
                 <div className="px-6 py-8 text-center text-gray-500">
-                  <p>No documents found</p>
+                  <p>{t('noDocumentsFound')}</p>
                   <Link 
                     to="/documents/new" 
                     className="inline-block mt-2 text-sm text-primary-600 hover:text-primary-800"
                   >
-                    Create your first document
+                    {t('createFirstDocument')}
                   </Link>
                 </div>
               )}
@@ -205,7 +207,7 @@ const DashboardPage: React.FC = () => {
         <div>
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-medium text-gray-900">Quick Links</h2>
+              <h2 className="text-lg font-medium text-gray-900">{t('quickLinks')}</h2>
             </CardHeader>
             <CardBody>
               <div className="space-y-4">
@@ -217,8 +219,8 @@ const DashboardPage: React.FC = () => {
                     <FileText size={16} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">Upload New Document</h3>
-                    <p className="text-xs text-gray-500">Add a new document to the system</p>
+                    <h3 className="text-sm font-medium text-gray-900">{t('uploadNewDocument')}</h3>
+                    <p className="text-xs text-gray-500">{t('newDocument')}</p>
                   </div>
                 </Link>
                 
@@ -230,8 +232,8 @@ const DashboardPage: React.FC = () => {
                     <Clock size={16} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">Pending Documents</h3>
-                    <p className="text-xs text-gray-500">Review documents awaiting approval</p>
+                    <h3 className="text-sm font-medium text-gray-900">{t('pendingDocuments')}</h3>
+                    <p className="text-xs text-gray-500">{t('pending')}</p>
                   </div>
                 </Link>
                 
@@ -243,8 +245,8 @@ const DashboardPage: React.FC = () => {
                     <Users size={16} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">Manage Users</h3>
-                    <p className="text-xs text-gray-500">Add or edit system users</p>
+                    <h3 className="text-sm font-medium text-gray-900">{t('manageUsers')}</h3>
+                    <p className="text-xs text-gray-500">{t('users')}</p>
                   </div>
                 </Link>
               </div>
@@ -253,7 +255,7 @@ const DashboardPage: React.FC = () => {
 
           <Card className="mt-5">
             <CardHeader>
-              <h2 className="text-lg font-medium text-gray-900">System Stats</h2>
+              <h2 className="text-lg font-medium text-gray-900">{t('systemStats')}</h2>
             </CardHeader>
             <CardBody>
               <div className="flex justify-between items-center p-3 rounded-lg bg-gray-50">
@@ -262,7 +264,7 @@ const DashboardPage: React.FC = () => {
                     <Users size={16} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">Total Users</h3>
+                    <h3 className="text-sm font-medium text-gray-900">{t('totalUsers')}</h3>
                   </div>
                 </div>
                 <span className="text-xl font-bold text-gray-900">{userCount}</span>
