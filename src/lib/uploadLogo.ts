@@ -6,7 +6,7 @@ export async function uploadLogo(file: File) {
     const timestamp = Date.now();
     const fileExt = file.name.split('.').pop();
     const fileName = `logo_${timestamp}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const filePath = fileName;
 
     // Upload the file
     const { data, error } = await supabase.storage
