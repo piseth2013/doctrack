@@ -77,6 +77,13 @@ const UsersPage: React.FC = () => {
     fetchCurrentUserRole();
   }, []);
 
+  useEffect(() => {
+    if (currentUserRole !== 'admin') {
+      return;
+    }
+    fetchUsers();
+  }, [currentUserRole]);
+
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
@@ -99,9 +106,31 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  if (currentUserRole !== 'admin') {
+    return (
+      <Card className="bg-warning-50 border-warning-200">
+        <CardBody className="p-12">
+          <div className="text-center">
+            <ShieldAlert className="mx-auto h-12 w-12 text-warning-500 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {t('adminOnly')}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {t('noPermission')}
+            </p>
+          </div>
+        </CardBody>
+      </Card>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader size="lg" text={t('loadingUsers')} />
+      </div>
+    );
+  }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -130,11 +159,6 @@ const UsersPage: React.FC = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (currentUserRole !== 'admin') {
-      setError(t('noPermission'));
-      return;
-    }
-
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
@@ -165,11 +189,6 @@ const UsersPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (currentUserRole !== 'admin') {
-      setError(t('noPermission'));
-      return;
-    }
-
     if (!formData.email || !formData.full_name) {
       setError(t('requiredFields'));
       return;
@@ -234,25 +253,8 @@ const UsersPage: React.FC = () => {
     (user.department && user.department.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Loader size="lg" text={t('loadingUsers')} />
-      </div>
-    );
-  }
-
   return (
     <div>
-      {currentUserRole !== 'admin' && (
-        <Card className="mb-6 bg-warning-50 border-warning-200">
-          <CardBody className="flex items-center gap-3 text-warning-800">
-            <ShieldAlert className="h-5 w-5" />
-            <p>{t('adminOnly')}</p>
-          </CardBody>
-        </Card>
-      )}
-
       {error && (
         <Card className="mb-6 bg-error-50 border-error-200">
           <CardBody className="text-error-700">
@@ -262,22 +264,20 @@ const UsersPage: React.FC = () => {
       )}
 
       <div className="flex justify-end mb-6">
-        {currentUserRole === 'admin' && (
-          <Button 
-            variant="primary" 
-            leftIcon={<Plus size={16} />}
-            onClick={() => {
-              setFormData(initialFormData);
-              setEditingUserId(null);
-              setShowForm(true);
-            }}
-          >
-            {t('addUser')}
-          </Button>
-        )}
+        <Button 
+          variant="primary" 
+          leftIcon={<Plus size={16} />}
+          onClick={() => {
+            setFormData(initialFormData);
+            setEditingUserId(null);
+            setShowForm(true);
+          }}
+        >
+          {t('addUser')}
+        </Button>
       </div>
 
-      {showForm && currentUserRole === 'admin' && (
+      {showForm && (
         <Card className="mb-6">
           <CardHeader className="flex flex-row items-center justify-between">
             <h2 className="text-lg font-medium text-gray-900">
@@ -427,21 +427,19 @@ const UsersPage: React.FC = () => {
                   ? t('noMatchingUsers').replace('{query}', searchQuery)
                   : t('getStartedAddUser')}
               </p>
-              {currentUserRole === 'admin' && (
-                <div className="mt-6">
-                  <Button 
-                    variant="primary" 
-                    leftIcon={<Plus size={16} />}
-                    onClick={() => {
-                      setFormData(initialFormData);
-                      setEditingUserId(null);
-                      setShowForm(true);
-                    }}
-                  >
-                    {t('addUser')}
-                  </Button>
-                </div>
-              )}
+              <div className="mt-6">
+                <Button 
+                  variant="primary" 
+                  leftIcon={<Plus size={16} />}
+                  onClick={() => {
+                    setFormData(initialFormData);
+                    setEditingUserId(null);
+                    setShowForm(true);
+                  }}
+                >
+                  {t('addUser')}
+                </Button>
+              </div>
             </div>
           </div>
         )}
