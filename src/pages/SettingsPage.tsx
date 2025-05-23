@@ -1,15 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
-import { Users, Settings as SettingsIcon, Building2 } from 'lucide-react';
+import { Users, Settings as SettingsIcon, Building2, Upload, X } from 'lucide-react';
 import { useTranslation } from '../lib/translations';
 import UsersPage from './UsersPage';
 import OrganizationPage from './organization/OrganizationPage';
+import Button from '../components/ui/Button';
+import { uploadLogo } from '../lib/uploadLogo';
 
 type SettingsSection = 'users' | 'general' | 'organization';
 
 const SettingsPage: React.FC = () => {
   const t = useTranslation();
   const [activeSection, setActiveSection] = useState<SettingsSection>('users');
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
+
+  const handleLogoUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('File size must be less than 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+    setError(null);
+
+    try {
+      const { url } = await uploadLogo(file);
+      setUploadedLogo(url);
+    } catch (err) {
+      setError('Failed to upload logo. Please try again.');
+      console.error('Upload error:', err);
+    } finally {
+      setIsUploading(false);
+    }
+  }, []);
 
   const menuItems = [
     {
@@ -28,6 +63,68 @@ const SettingsPage: React.FC = () => {
       icon: <SettingsIcon size={20} />,
     },
   ] as const;
+
+  const renderGeneralSettings = () => (
+    <Card>
+      <CardHeader>
+        <h2 className="text-lg font-medium text-gray-900">{t('general')}</h2>
+      </CardHeader>
+      <CardBody>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-base font-medium text-gray-900 mb-4">Logo Settings</h3>
+            <div className="space-y-4">
+              {uploadedLogo && (
+                <div className="relative w-48 h-48 border rounded-lg overflow-hidden">
+                  <img 
+                    src={uploadedLogo} 
+                    alt="Uploaded logo" 
+                    className="w-full h-full object-contain"
+                  />
+                  <button
+                    onClick={() => setUploadedLogo(null)}
+                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
+                  >
+                    <X size={16} className="text-gray-600" />
+                  </button>
+                </div>
+              )}
+              
+              <div>
+                <label className="block">
+                  <Button
+                    variant="outline"
+                    className="relative"
+                    leftIcon={<Upload size={16} />}
+                    isLoading={isUploading}
+                  >
+                    {isUploading ? 'Uploading...' : 'Upload Logo'}
+                    <input
+                      type="file"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={handleLogoUpload}
+                      accept="image/*"
+                      disabled={isUploading}
+                    />
+                  </Button>
+                </label>
+                <p className="mt-2 text-sm text-gray-500">
+                  Recommended: Square image, max 2MB
+                </p>
+                {error && (
+                  <p className="mt-2 text-sm text-error-600">{error}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 pt-6">
+            <p className="text-gray-500">{t('comingSoon')}</p>
+          </div>
+        </div>
+      </CardBody>
+    </Card>
+  );
 
   return (
     <div>
@@ -74,20 +171,7 @@ const SettingsPage: React.FC = () => {
             <OrganizationPage />
           )}
 
-          {activeSection === 'general' && (
-            <Card>
-              <CardHeader>
-                <h2 className="text-lg font-medium text-gray-900">{t('general')}</h2>
-              </CardHeader>
-              <CardBody>
-                <div className="space-y-6">
-                  <div className="border-t border-gray-200 pt-6">
-                    <p className="text-gray-500">{t('comingSoon')}</p>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          )}
+          {activeSection === 'general' && renderGeneralSettings()}
         </div>
       </div>
     </div>
