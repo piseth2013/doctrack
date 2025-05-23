@@ -44,31 +44,25 @@ const UsersPage: React.FC = () => {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const t = useTranslation();
 
+  // Fetch current user's role
   useEffect(() => {
     const fetchCurrentUserRole = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.log('No authenticated user found');
-          return;
-        }
+        if (!user) return;
 
-        const { data: profiles, error } = await supabase
+        const { data, error } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', user.id);
+          .eq('id', user.id)
+          .maybeSingle();
 
         if (error) {
-          console.error('Error fetching user profile:', error);
+          console.error('Error fetching user role:', error);
           return;
         }
 
-        if (!profiles || profiles.length === 0) {
-          console.log(`No profile found for user ID: ${user.id}`);
-          return;
-        }
-
-        setCurrentUserRole(profiles[0]?.role || null);
+        setCurrentUserRole(data?.role || null);
       } catch (error) {
         console.error('Error in fetchCurrentUserRole:', error);
       }
@@ -77,60 +71,29 @@ const UsersPage: React.FC = () => {
     fetchCurrentUserRole();
   }, []);
 
+  // Fetch users only if current user is admin
   useEffect(() => {
-    if (currentUserRole !== 'admin') {
-      return;
+    if (currentUserRole === 'admin') {
+      fetchUsers();
     }
-    fetchUsers();
   }, [currentUserRole]);
 
   const fetchUsers = async () => {
-    setIsLoading(true);
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      const { data, error } = await query;
-
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
+      setError('Failed to load users');
     } finally {
       setIsLoading(false);
     }
   };
-
-  if (currentUserRole !== 'admin') {
-    return (
-      <Card className="bg-warning-50 border-warning-200">
-        <CardBody className="p-12">
-          <div className="text-center">
-            <ShieldAlert className="mx-auto h-12 w-12 text-warning-500 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {t('adminOnly')}
-            </h3>
-            <p className="text-sm text-gray-600">
-              {t('noPermission')}
-            </p>
-          </div>
-        </CardBody>
-      </Card>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Loader size="lg" text={t('loadingUsers')} />
-      </div>
-    );
-  }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -253,6 +216,32 @@ const UsersPage: React.FC = () => {
     (user.department && user.department.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  if (currentUserRole !== 'admin') {
+    return (
+      <Card className="bg-warning-50 border-warning-200">
+        <CardBody className="p-12">
+          <div className="text-center">
+            <ShieldAlert className="mx-auto h-12 w-12 text-warning-500 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {t('adminOnly')}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {t('noPermission')}
+            </p>
+          </div>
+        </CardBody>
+      </Card>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader size="lg" text={t('loadingUsers')} />
+      </div>
+    );
+  }
+
   return (
     <div>
       {error && (
@@ -279,25 +268,25 @@ const UsersPage: React.FC = () => {
 
       {showForm && (
         <Card className="mb-6">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900">
-              {editingUserId ? t('edit') : t('addUser')}
-            </h2>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => {
-                setShowForm(false);
-                setEditingUserId(null);
-                setFormData(initialFormData);
-              }}
-              className="text-gray-500"
-            >
-              <X size={18} />
-            </Button>
-          </CardHeader>
-          
           <form onSubmit={handleSubmit}>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <h2 className="text-lg font-medium text-gray-900">
+                {editingUserId ? t('edit') : t('addUser')}
+              </h2>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingUserId(null);
+                  setFormData(initialFormData);
+                }}
+                className="text-gray-500"
+              >
+                <X size={18} />
+              </Button>
+            </CardHeader>
+            
             <CardBody className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
