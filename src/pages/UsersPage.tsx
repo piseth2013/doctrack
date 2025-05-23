@@ -46,15 +46,31 @@ const UsersPage: React.FC = () => {
 
   useEffect(() => {
     const fetchCurrentUserRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log('No authenticated user found');
+          return;
+        }
+
+        const { data: profiles, error } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', user.id)
-          .single();
-        
-        setCurrentUserRole(profile?.role || null);
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('Error fetching user profile:', error);
+          return;
+        }
+
+        if (!profiles || profiles.length === 0) {
+          console.log(`No profile found for user ID: ${user.id}`);
+          return;
+        }
+
+        setCurrentUserRole(profiles[0]?.role || null);
+      } catch (error) {
+        console.error('Error in fetchCurrentUserRole:', error);
       }
     };
 
