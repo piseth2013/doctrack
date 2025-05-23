@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
-import { Users, Settings as SettingsIcon, Building2 } from 'lucide-react';
+import { Users, Settings as SettingsIcon, Building2, Upload } from 'lucide-react';
 import { useTranslation } from '../lib/translations';
 import UsersPage from './UsersPage';
 import OrganizationPage from './organization/OrganizationPage';
+import Button from '../components/ui/Button';
+import { uploadLogo } from '../lib/uploadLogo';
 
 type SettingsSection = 'users' | 'general' | 'organization';
 
 const SettingsPage: React.FC = () => {
   const t = useTranslation();
   const [activeSection, setActiveSection] = useState<SettingsSection>('users');
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const menuItems = [
     {
@@ -28,6 +33,40 @@ const SettingsPage: React.FC = () => {
       icon: <SettingsIcon size={20} />,
     },
   ] as const;
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset messages
+    setError(null);
+    setSuccessMessage(null);
+    setIsUploading(true);
+
+    try {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please upload an image file');
+      }
+
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        throw new Error('File size should be less than 2MB');
+      }
+
+      const { url } = await uploadLogo(file);
+      setSuccessMessage('Logo uploaded successfully');
+      
+      // You might want to store the URL in your site settings or update the UI
+      console.log('Logo URL:', url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload logo');
+    } finally {
+      setIsUploading(false);
+      // Reset the input
+      event.target.value = '';
+    }
+  };
 
   return (
     <div>
@@ -81,6 +120,42 @@ const SettingsPage: React.FC = () => {
               </CardHeader>
               <CardBody>
                 <div className="space-y-6">
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 mb-4">Logo Settings</h3>
+                    <div className="max-w-xl">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Upload Logo
+                      </label>
+                      <div className="mt-1 flex items-center">
+                        <Button
+                          variant="outline"
+                          className="relative"
+                          leftIcon={<Upload size={16} />}
+                          isLoading={isUploading}
+                        >
+                          {isUploading ? 'Uploading...' : 'Choose File'}
+                          <input
+                            type="file"
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            onChange={handleLogoUpload}
+                            accept="image/*"
+                            disabled={isUploading}
+                          />
+                        </Button>
+                      </div>
+                      <p className="mt-2 text-sm text-gray-500">
+                        Recommended size: 200x50 pixels. Max file size: 2MB.
+                        Supported formats: PNG, JPG, GIF
+                      </p>
+                      {error && (
+                        <p className="mt-2 text-sm text-error-600">{error}</p>
+                      )}
+                      {successMessage && (
+                        <p className="mt-2 text-sm text-success-600">{successMessage}</p>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="border-t border-gray-200 pt-6">
                     <p className="text-gray-500">{t('comingSoon')}</p>
                   </div>
