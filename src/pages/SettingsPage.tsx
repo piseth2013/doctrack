@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
-import { Users, Settings as SettingsIcon, Building2 } from 'lucide-react';
+import { Users, Settings as SettingsIcon, Building2, Upload } from 'lucide-react';
 import { useTranslation } from '../lib/translations';
 import UsersPage from './UsersPage';
 import OrganizationPage from './organization/OrganizationPage';
+import Button from '../components/ui/Button';
+import { supabase } from '../lib/supabase';
 
 type SettingsSection = 'users' | 'general' | 'organization';
 
 const SettingsPage: React.FC = () => {
   const t = useTranslation();
   const [activeSection, setActiveSection] = useState<SettingsSection>('users');
+  const [isUploading, setIsUploading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   const menuItems = [
     {
@@ -28,6 +32,58 @@ const SettingsPage: React.FC = () => {
       icon: <SettingsIcon size={20} />,
     },
   ] as const;
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size should be less than 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Upload file to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('logoUpload')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('logoUpload')
+        .getPublicUrl(fileName);
+
+      // Update logo settings
+      const { error: updateError } = await supabase
+        .from('logo_settings')
+        .update({ 
+          logo_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', (await supabase.from('logo_settings').select('id').single()).data?.id);
+
+      if (updateError) throw updateError;
+
+      setLogoUrl(publicUrl);
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      alert('Failed to upload logo');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div>
@@ -81,6 +137,38 @@ const SettingsPage: React.FC = () => {
               </CardHeader>
               <CardBody>
                 <div className="space-y-6">
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 mb-4">Logo</h3>
+                    <div className="flex items-center space-x-4">
+                      {logoUrl && (
+                        <div className="w-16 h-16 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
+                          <img src={logoUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
+                        </div>
+                      )}
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                          id="logo-upload"
+                        />
+                        <label htmlFor="logo-upload">
+                          <Button
+                            as="span"
+                            variant="outline"
+                            leftIcon={<Upload size={16} />}
+                            disabled={isUploading}
+                          >
+                            {isUploading ? 'Uploading...' : 'Upload Logo'}
+                          </Button>
+                        </label>
+                        <p className="mt-2 text-sm text-gray-500">
+                          Recommended size: 512x512px. Max file size: 2MB.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                   <div className="border-t border-gray-200 pt-6">
                     <p className="text-gray-500">{t('comingSoon')}</p>
                   </div>
