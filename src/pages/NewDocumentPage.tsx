@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { DocumentUploader } from '../components/documents/DocumentUploader';
+import { useTranslation } from '../lib/translations';
 
 export default function NewDocumentPage() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function NewDocumentPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslation();
 
   const sanitizeFileName = (fileName: string): string => {
     // Generate a random suffix to ensure uniqueness
@@ -97,12 +99,12 @@ export default function NewDocumentPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">New Document</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('newDocument')}</h1>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Title
+            {t('title')}
           </label>
           <Input
             id="title"
@@ -115,7 +117,7 @@ export default function NewDocumentPage() {
 
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Description
+            {t('description')}
           </label>
           <textarea
             id="description"
@@ -128,7 +130,7 @@ export default function NewDocumentPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Files
+            {t('files')}
           </label>
           <DocumentUploader
             onFilesSelected={setFiles}
@@ -150,13 +152,13 @@ export default function NewDocumentPage() {
             variant="outline"
             onClick={() => navigate('/documents')}
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting || files.length === 0}
           >
-            {isSubmitting ? 'Creating...' : 'Create Document'}
+            {isSubmitting ? t('creating') : t('create')}
           </Button>
         </div>
       </form>
