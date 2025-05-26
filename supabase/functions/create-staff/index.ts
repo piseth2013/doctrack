@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'No authorization header' }),
-        { headers: corsHeaders, status: 401 }
+        { headers: { ...corsHeaders }, status: 401 }
       );
     }
 
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     if (authError || !caller) {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
-        { headers: corsHeaders, status: 401 }
+        { headers: { ...corsHeaders }, status: 401 }
       );
     }
 
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     if (profileError || !callerProfile || callerProfile.role !== 'admin') {
       return new Response(
         JSON.stringify({ error: 'Unauthorized - Admin access required' }),
-        { headers: corsHeaders, status: 403 }
+        { headers: { ...corsHeaders }, status: 403 }
       );
     }
 
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
     } catch (e) {
       return new Response(
         JSON.stringify({ error: 'Invalid JSON payload' }),
-        { headers: corsHeaders, status: 400 }
+        { headers: { ...corsHeaders }, status: 400 }
       );
     }
 
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     if (!name || !email) {
       return new Response(
         JSON.stringify({ error: 'Name and email are required' }),
-        { headers: corsHeaders, status: 400 }
+        { headers: { ...corsHeaders }, status: 400 }
       );
     }
 
@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
     if (existingUser) {
       return new Response(
         JSON.stringify({ error: 'A staff member with this email already exists' }),
-        { headers: corsHeaders, status: 400 }
+        { headers: { ...corsHeaders }, status: 400 }
       );
     }
 
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
     if (userError) {
       return new Response(
         JSON.stringify({ error: 'Failed to create user account' }),
-        { headers: corsHeaders, status: 400 }
+        { headers: { ...corsHeaders }, status: 400 }
       );
     }
 
@@ -238,7 +238,7 @@ Deno.serve(async (req) => {
           message: 'Staff created successfully',
           data: { staff }
         }),
-        { headers: corsHeaders, status: 200 }
+        { headers: { ...corsHeaders }, status: 200 }
       );
 
     } catch (error) {
@@ -255,7 +255,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         error: error instanceof Error ? error.message : 'An unexpected error occurred'
       }),
-      { headers: corsHeaders, status: 500 }
+      { headers: { ...corsHeaders }, status: 500 }
     );
   }
 });
