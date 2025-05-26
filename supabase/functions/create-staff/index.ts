@@ -3,9 +3,10 @@ import { SmtpClient } from "npm:smtp@1.0.0";
 
 // Update CORS headers to be more specific about allowed origins and headers
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*', // In production, this should be your specific domain
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json'
 };
 
 interface CreateStaffPayload {
@@ -49,7 +50,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'No authorization header' }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 401 
         }
       );
@@ -62,7 +63,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 401 
         }
       );
@@ -78,7 +79,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Unauthorized - Admin access required' }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 403 
         }
       );
@@ -92,7 +93,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Invalid JSON payload' }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 400 
         }
       );
@@ -104,7 +105,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Name and email are required' }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 400 
         }
       );
@@ -131,7 +132,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: staffError.message }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 400 
         }
       );
@@ -147,22 +148,32 @@ Deno.serve(async (req) => {
       });
 
     if (codeError) {
-      // If verification code creation fails, still return success but log the error
       console.error('Failed to create verification code:', codeError);
     }
 
     // Send verification email
     try {
       const smtp = new SmtpClient();
+      
+      const smtpHost = Deno.env.get('SMTP_HOST');
+      const smtpPort = Deno.env.get('SMTP_PORT');
+      const smtpUsername = Deno.env.get('SMTP_USERNAME');
+      const smtpPassword = Deno.env.get('SMTP_PASSWORD');
+      const smtpFrom = Deno.env.get('SMTP_FROM');
+
+      if (!smtpHost || !smtpPort || !smtpUsername || !smtpPassword || !smtpFrom) {
+        throw new Error('Missing SMTP configuration');
+      }
+
       await smtp.connect({
-        hostname: Deno.env.get('SMTP_HOST') ?? '',
-        port: parseInt(Deno.env.get('SMTP_PORT') ?? '587'),
-        username: Deno.env.get('SMTP_USERNAME'),
-        password: Deno.env.get('SMTP_PASSWORD'),
+        hostname: smtpHost,
+        port: parseInt(smtpPort),
+        username: smtpUsername,
+        password: smtpPassword,
       });
 
       await smtp.send({
-        from: Deno.env.get('SMTP_FROM') ?? '',
+        from: smtpFrom,
         to: email,
         subject: "Your DocTrack Verification Code",
         content: `
@@ -181,7 +192,6 @@ Deno.serve(async (req) => {
 
       await smtp.close();
     } catch (emailError) {
-      // If email sending fails, still return success but log the error
       console.error('Failed to send verification email:', emailError);
     }
 
@@ -191,7 +201,7 @@ Deno.serve(async (req) => {
         staff,
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: corsHeaders,
         status: 200,
       },
     );
@@ -203,7 +213,7 @@ Deno.serve(async (req) => {
         error: error instanceof Error ? error.message : 'An unexpected error occurred',
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: corsHeaders,
         status: 500,
       },
     );

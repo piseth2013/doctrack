@@ -182,28 +182,23 @@ const StaffTab: React.FC = () => {
         // Create new staff member with verification
         const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-staff`;
         
-        try {
-          const response = await fetch(functionUrl, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
-          });
+        const response = await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
 
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
-            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-          }
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
 
-          const result = await response.json();
-          if (!result.staff) {
-            throw new Error('Invalid response from server');
-          }
-        } catch (fetchError) {
-          console.error('Edge function error:', fetchError);
-          throw new Error(`Failed to create staff member: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
+        const result = await response.json();
+        if (!result.staff) {
+          throw new Error('Invalid response from server');
         }
       }
 
