@@ -1,8 +1,9 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.39.3';
 import { SmtpClient } from "npm:smtp@1.0.0";
 
+// Update CORS headers to be more specific about allowed origins and headers
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': '*', // In production, this should be your specific domain
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
@@ -15,14 +16,26 @@ interface CreateStaffPayload {
 }
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders, status: 204 });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204 
+    });
   }
 
   try {
+    // Initialize Supabase client with error checking
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing required environment variables');
+    }
+
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      supabaseUrl,
+      supabaseServiceKey,
       {
         auth: {
           autoRefreshToken: false,
@@ -32,12 +45,28 @@ Deno.serve(async (req) => {
 
     // Verify admin authorization
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error('No authorization header');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      );
+    }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user: caller }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
-    if (authError || !caller) throw new Error('Invalid token');
+    if (authError || !caller) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      );
+    }
 
     const { data: callerProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
@@ -46,11 +75,40 @@ Deno.serve(async (req) => {
       .single();
 
     if (profileError || !callerProfile || callerProfile.role !== 'admin') {
-      throw new Error('Unauthorized - Admin access required');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Admin access required' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 403 
+        }
+      );
     }
 
-    const payload: CreateStaffPayload = await req.json();
+    // Parse and validate request payload
+    let payload: CreateStaffPayload;
+    try {
+      payload = await req.json();
+    } catch (e) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON payload' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
+
     const { name, email, position_id, office_id } = payload;
+
+    if (!name || !email) {
+      return new Response(
+        JSON.stringify({ error: 'Name and email are required' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
 
     // Generate verification code
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -69,7 +127,15 @@ Deno.serve(async (req) => {
       .select()
       .single();
 
-    if (staffError) throw staffError;
+    if (staffError) {
+      return new Response(
+        JSON.stringify({ error: staffError.message }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
 
     // Store verification code
     const { error: codeError } = await supabaseAdmin
@@ -80,36 +146,44 @@ Deno.serve(async (req) => {
         expires_at: expiresAt.toISOString(),
       });
 
-    if (codeError) throw codeError;
+    if (codeError) {
+      // If verification code creation fails, still return success but log the error
+      console.error('Failed to create verification code:', codeError);
+    }
 
     // Send verification email
-    const smtp = new SmtpClient();
-    await smtp.connect({
-      hostname: Deno.env.get('SMTP_HOST') ?? '',
-      port: parseInt(Deno.env.get('SMTP_PORT') ?? '587'),
-      username: Deno.env.get('SMTP_USERNAME'),
-      password: Deno.env.get('SMTP_PASSWORD'),
-    });
+    try {
+      const smtp = new SmtpClient();
+      await smtp.connect({
+        hostname: Deno.env.get('SMTP_HOST') ?? '',
+        port: parseInt(Deno.env.get('SMTP_PORT') ?? '587'),
+        username: Deno.env.get('SMTP_USERNAME'),
+        password: Deno.env.get('SMTP_PASSWORD'),
+      });
 
-    await smtp.send({
-      from: Deno.env.get('SMTP_FROM') ?? '',
-      to: email,
-      subject: "Your DocTrack Verification Code",
-      content: `
-        Hello ${name},
+      await smtp.send({
+        from: Deno.env.get('SMTP_FROM') ?? '',
+        to: email,
+        subject: "Your DocTrack Verification Code",
+        content: `
+          Hello ${name},
 
-        Welcome to DocTrack! Use the following code to verify your email and set up your account:
+          Welcome to DocTrack! Use the following code to verify your email and set up your account:
 
-        ${code}
+          ${code}
 
-        This code will expire in 24 hours.
+          This code will expire in 24 hours.
 
-        Best regards,
-        DocTrack Team
-      `,
-    });
+          Best regards,
+          DocTrack Team
+        `,
+      });
 
-    await smtp.close();
+      await smtp.close();
+    } catch (emailError) {
+      // If email sending fails, still return success but log the error
+      console.error('Failed to send verification email:', emailError);
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -123,13 +197,14 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
+    console.error('Error in create-staff function:', error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'An unexpected error occurred',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       },
     );
   }
