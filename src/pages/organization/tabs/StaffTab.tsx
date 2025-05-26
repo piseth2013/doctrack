@@ -33,14 +33,12 @@ interface Office {
 
 interface StaffFormData {
   name: string;
-  email: string;
   position_id: string;
   office_id: string;
 }
 
 const initialFormData: StaffFormData = {
   name: '',
-  email: '',
   position_id: '',
   office_id: '',
 };
@@ -57,7 +55,6 @@ const StaffTab: React.FC = () => {
   const [formData, setFormData] = useState<StaffFormData>(initialFormData);
   const [editingStaff, setEditingStaff] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const t = useTranslation();
 
   const fetchStaff = async () => {
@@ -116,7 +113,6 @@ const StaffTab: React.FC = () => {
   const handleEdit = (person: Staff) => {
     setFormData({
       name: person.name,
-      email: '',
       position_id: person.position_id || '',
       office_id: person.office_id || '',
     });
@@ -147,46 +143,34 @@ const StaffTab: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
-    setSuccessMessage(null);
 
     try {
-      if (!formData.name.trim() || !formData.email.trim()) {
-        throw new Error('Name and email are required');
+      if (!formData.name.trim()) {
+        throw new Error('Staff name is required');
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('No authentication token found');
-      }
+      const staffData = {
+        name: formData.name,
+        position_id: formData.position_id || null,
+        office_id: formData.office_id || null,
+        updated_at: new Date().toISOString(),
+      };
 
       if (editingStaff) {
         // Update existing staff member
         const { error } = await supabase
           .from('staff')
-          .update({
-            name: formData.name,
-            position_id: formData.position_id || null,
-            office_id: formData.office_id || null,
-            updated_at: new Date().toISOString(),
-          })
+          .update(staffData)
           .eq('id', editingStaff);
 
         if (error) throw error;
       } else {
-        // Create new staff member with user account
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-staff-user`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
+        // Create new staff member
+        const { error } = await supabase
+          .from('staff')
+          .insert(staffData);
 
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error);
-
-        setSuccessMessage(`Staff member created successfully. Temporary password: ${result.user.password}`);
+        if (error) throw error;
       }
 
       // Reset form and refresh staff
@@ -310,12 +294,6 @@ const StaffTab: React.FC = () => {
         </div>
       )}
 
-      {successMessage && (
-        <div className="mb-4 p-4 text-sm text-success-700 bg-success-50 rounded-md">
-          {successMessage}
-        </div>
-      )}
-
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="flex-1 flex items-center gap-4">
           <Input
@@ -387,16 +365,6 @@ const StaffTab: React.FC = () => {
                 onChange={handleInputChange}
                 required
               />
-              {!editingStaff && (
-                <Input
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              )}
               <div>
                 <label htmlFor="position_id" className="block text-sm font-medium text-gray-700 mb-1">
                   {t('staffPosition')}
