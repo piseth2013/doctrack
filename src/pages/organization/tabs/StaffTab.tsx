@@ -10,6 +10,7 @@ import { useTranslation } from '../../../lib/translations';
 interface Staff {
   id: string;
   name: string;
+  email: string;
   position_id: string | null;
   office_id: string | null;
   created_at: string;
@@ -33,12 +34,14 @@ interface Office {
 
 interface StaffFormData {
   name: string;
+  email: string;
   position_id: string;
   office_id: string;
 }
 
 const initialFormData: StaffFormData = {
   name: '',
+  email: '',
   position_id: '',
   office_id: '',
 };
@@ -113,6 +116,7 @@ const StaffTab: React.FC = () => {
   const handleEdit = (person: Staff) => {
     setFormData({
       name: person.name,
+      email: person.email || '',
       position_id: person.position_id || '',
       office_id: person.office_id || '',
     });
@@ -145,32 +149,50 @@ const StaffTab: React.FC = () => {
     setError('');
 
     try {
-      if (!formData.name.trim()) {
-        throw new Error('Staff name is required');
+      if (!formData.name.trim() || !formData.email.trim()) {
+        throw new Error('Name and email are required');
       }
 
-      const staffData = {
-        name: formData.name,
-        position_id: formData.position_id || null,
-        office_id: formData.office_id || null,
-        updated_at: new Date().toISOString(),
-      };
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No authentication token found');
+      }
 
       if (editingStaff) {
         // Update existing staff member
         const { error } = await supabase
           .from('staff')
-          .update(staffData)
+          .update({
+            name: formData.name,
+            email: formData.email,
+            position_id: formData.position_id || null,
+            office_id: formData.office_id || null,
+            updated_at: new Date().toISOString(),
+          })
           .eq('id', editingStaff);
 
         if (error) throw error;
       } else {
-        // Create new staff member
-        const { error } = await supabase
-          .from('staff')
-          .insert(staffData);
+        // Create new staff member with verification
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-staff`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to create staff member');
+        }
       }
 
       // Reset form and refresh staff
@@ -188,6 +210,7 @@ const StaffTab: React.FC = () => {
 
   const filteredStaff = staff.filter(person =>
     person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (person.email && person.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (person.positions?.name && person.positions.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (person.offices?.name && person.offices.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
@@ -204,6 +227,7 @@ const StaffTab: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-medium text-gray-900">{person.name}</h3>
+                  <p className="mt-1 text-sm text-gray-500">{person.email}</p>
                   {person.positions && (
                     <p className="mt-1 text-sm text-gray-500">{person.positions.name}</p>
                   )}
@@ -248,6 +272,7 @@ const StaffTab: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-lg font-medium text-gray-900">{person.name}</h3>
+                <p className="mt-1 text-sm text-gray-500">{person.email}</p>
                 {person.positions && (
                   <p className="mt-1 text-sm text-gray-500">{person.positions.name}</p>
                 )}
@@ -362,6 +387,14 @@ const StaffTab: React.FC = () => {
                 label={t('staffName')}
                 name="name"
                 value={formData.name}
+                onChange={handleInputChange}
+                required
+              />
+              <Input
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email}
                 onChange={handleInputChange}
                 required
               />
