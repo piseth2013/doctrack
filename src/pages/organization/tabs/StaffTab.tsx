@@ -180,7 +180,9 @@ const StaffTab: React.FC = () => {
         if (error) throw error;
       } else {
         // Create new staff member with verification
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-staff`, {
+        const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-staff`;
+        
+        const response = await fetch(functionUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
@@ -191,8 +193,13 @@ const StaffTab: React.FC = () => {
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to create staff member');
+          const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (!result.staff) {
+          throw new Error('Invalid response from server');
         }
       }
 
