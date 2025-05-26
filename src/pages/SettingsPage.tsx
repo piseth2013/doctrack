@@ -199,23 +199,22 @@ const SettingsPage: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleLogoUpload}
-                          className="hidden"
-                          id="logo-upload"
-                        />
-                        <label htmlFor="logo-upload">
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            disabled={isUploading}
+                          />
                           <Button
-                            as="span"
                             variant="outline"
                             leftIcon={<Upload size={16} />}
                             disabled={isUploading}
                           >
                             {isUploading ? 'Uploading...' : 'Upload Logo'}
                           </Button>
-                        </label>
+                        </div>
                         <p className="mt-2 text-sm text-gray-500">
                           Recommended size: 512x512px. Max file size: 2MB.
                         </p>

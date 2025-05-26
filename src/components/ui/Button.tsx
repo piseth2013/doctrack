@@ -13,7 +13,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
   children,
   className,
   variant = 'primary',
@@ -24,7 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   disabled,
   ...props
-}) => {
+}, ref) => {
   const variantStyles = {
     primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
     secondary: 'bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500',
@@ -41,10 +41,11 @@ export const Button: React.FC<ButtonProps> = ({
     lg: 'px-6 py-3 text-lg',
   };
 
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200';
+  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 cursor-pointer';
   
   return (
     <button
+      ref={ref}
       className={twMerge(
         baseStyles,
         variantStyles[variant],
@@ -67,6 +68,8 @@ export const Button: React.FC<ButtonProps> = ({
       {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}
     </button>
   );
-};
+});
+
+Button.displayName = 'Button';
 
 export default Button;
