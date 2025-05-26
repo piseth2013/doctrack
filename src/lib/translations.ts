@@ -106,6 +106,13 @@ export const translations = {
     // Auth
     signIn: 'Sign in',
     demoCredentials: 'Demo credentials',
+
+    // Document form translations
+    title: 'Title',
+    description: 'Description',
+    files: 'Files',
+    create: 'Create Document',
+    creating: 'Creating...',
   },
   km: {
     // Navigation
@@ -200,6 +207,13 @@ export const translations = {
     // Auth
     signIn: 'ចូល',
     demoCredentials: 'ព័ត៌មានគណនីសាកល្បង',
+
+    // Document form translations
+    title: 'ចំណងជើង',
+    description: 'ការពិពណ៌នា',
+    files: 'ឯកសារ',
+    create: 'បង្កើតឯកសារ',
+    creating: 'កំពុងបង្កើត...',
   },
 };
 
