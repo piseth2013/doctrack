@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.39.3';
-import { SmtpClient } from "npm:smtp@1.0.0";
+import { SMTPClient } from "npm:smtp-client@4.0.0";
 
 // Update CORS headers to be more specific about allowed origins and headers
 const corsHeaders = {
@@ -153,8 +153,6 @@ Deno.serve(async (req) => {
 
     // Send verification email
     try {
-      const smtp = new SmtpClient();
-      
       const smtpHost = Deno.env.get('SMTP_HOST');
       const smtpPort = Deno.env.get('SMTP_PORT');
       const smtpUsername = Deno.env.get('SMTP_USERNAME');
@@ -165,32 +163,41 @@ Deno.serve(async (req) => {
         throw new Error('Missing SMTP configuration');
       }
 
-      await smtp.connect({
-        hostname: smtpHost,
+      const client = new SMTPClient({
+        host: smtpHost,
         port: parseInt(smtpPort),
         username: smtpUsername,
         password: smtpPassword,
+        secure: true,
       });
 
-      await smtp.send({
-        from: smtpFrom,
-        to: email,
-        subject: "Your DocTrack Verification Code",
-        content: `
-          Hello ${name},
+      await client.connect();
+      await client.greet({ hostname: smtpHost });
+      await client.authPlain({ username: smtpUsername, password: smtpPassword });
 
-          Welcome to DocTrack! Use the following code to verify your email and set up your account:
+      const message = [
+        `From: ${smtpFrom}`,
+        `To: ${email}`,
+        'Subject: Your DocTrack Verification Code',
+        'Content-Type: text/plain; charset=utf-8',
+        '',
+        `Hello ${name},`,
+        '',
+        'Welcome to DocTrack! Use the following code to verify your email and set up your account:',
+        '',
+        code,
+        '',
+        'This code will expire in 24 hours.',
+        '',
+        'Best regards,',
+        'DocTrack Team'
+      ].join('\r\n');
 
-          ${code}
+      await client.mail({ from: smtpFrom });
+      await client.rcpt({ to: email });
+      await client.data(message);
+      await client.quit();
 
-          This code will expire in 24 hours.
-
-          Best regards,
-          DocTrack Team
-        `,
-      });
-
-      await smtp.close();
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
     }
