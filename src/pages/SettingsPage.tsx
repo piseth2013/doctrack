@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
 import { Users, Settings as SettingsIcon, Building2, Upload } from 'lucide-react';
 import { useTranslation } from '../lib/translations';
@@ -14,6 +14,105 @@ const SettingsPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState<SettingsSection>('users');
   const [isUploading, setIsUploading] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchLogo();
+  }, []);
+
+  const fetchLogo = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('logo_settings')
+        .select('logo_url')
+        .single();
+
+      if (error) throw error;
+      setLogoUrl(data?.logo_url);
+    } catch (err) {
+      console.error('Error fetching logo:', err);
+    }
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset error state
+    setError(null);
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('File size should be less than 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Upload file to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+
+      // Delete old logo if exists
+      if (logoUrl) {
+        const oldFileName = logoUrl.split('/').pop();
+        if (oldFileName) {
+          await supabase.storage
+            .from('logoUpload')
+            .remove([oldFileName]);
+        }
+      }
+
+      // Upload new logo
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('logoUpload')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('logoUpload')
+        .getPublicUrl(fileName);
+
+      // Get logo settings record
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('logo_settings')
+        .select('id')
+        .single();
+
+      if (settingsError) throw settingsError;
+
+      // Update logo settings
+      const { error: updateError } = await supabase
+        .from('logo_settings')
+        .update({ 
+          logo_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', settingsData.id);
+
+      if (updateError) throw updateError;
+
+      setLogoUrl(publicUrl);
+    } catch (err) {
+      console.error('Error uploading logo:', err);
+      setError(err instanceof Error ? err.message : 'Failed to upload logo');
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
 
   const menuItems = [
     {
@@ -32,58 +131,6 @@ const SettingsPage: React.FC = () => {
       icon: <SettingsIcon size={20} />,
     },
   ] as const;
-
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
-      return;
-    }
-
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      alert('File size should be less than 2MB');
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      // Upload file to Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `logo-${Date.now()}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('logoUpload')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('logoUpload')
-        .getPublicUrl(fileName);
-
-      // Update logo settings
-      const { error: updateError } = await supabase
-        .from('logo_settings')
-        .update({ 
-          logo_url: publicUrl,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', (await supabase.from('logo_settings').select('id').single()).data?.id);
-
-      if (updateError) throw updateError;
-
-      setLogoUrl(publicUrl);
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      alert('Failed to upload logo');
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   return (
     <div>
@@ -140,11 +187,17 @@ const SettingsPage: React.FC = () => {
                   <div>
                     <h3 className="text-base font-medium text-gray-900 mb-4">Logo</h3>
                     <div className="flex items-center space-x-4">
-                      {logoUrl && (
-                        <div className="w-16 h-16 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
-                          <img src={logoUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
-                        </div>
-                      )}
+                      <div className="w-16 h-16 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
+                        {logoUrl ? (
+                          <img 
+                            src={logoUrl} 
+                            alt="Logo" 
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        ) : (
+                          <Upload size={24} className="text-gray-400" />
+                        )}
+                      </div>
                       <div>
                         <input
                           type="file"
@@ -166,6 +219,11 @@ const SettingsPage: React.FC = () => {
                         <p className="mt-2 text-sm text-gray-500">
                           Recommended size: 512x512px. Max file size: 2MB.
                         </p>
+                        {error && (
+                          <p className="mt-2 text-sm text-error-600">
+                            {error}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
