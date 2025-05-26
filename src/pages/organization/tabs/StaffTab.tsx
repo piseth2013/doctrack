@@ -185,13 +185,14 @@ const StaffTab: React.FC = () => {
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
           },
           body: JSON.stringify(formData),
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to create staff member');
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create staff member');
         }
       }
 
