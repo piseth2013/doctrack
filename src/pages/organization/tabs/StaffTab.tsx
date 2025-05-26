@@ -153,7 +153,6 @@ const StaffTab: React.FC = () => {
         throw new Error('Name and email are required');
       }
 
-      // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         throw new Error('Please enter a valid email address');
@@ -165,7 +164,6 @@ const StaffTab: React.FC = () => {
       }
 
       if (editingStaff) {
-        // Update existing staff member
         const { error } = await supabase
           .from('staff')
           .update({
@@ -179,17 +177,16 @@ const StaffTab: React.FC = () => {
 
         if (error) throw error;
       } else {
-        // Create new staff member with verification
-        const { data: functionUrl } = await supabase.functions.invoke('create-staff', {
+        const { data, error } = await supabase.functions.invoke('create-staff', {
           body: formData,
         });
 
-        if (!functionUrl || !functionUrl.staff) {
+        if (error) throw error;
+        if (!data?.staff) {
           throw new Error('Invalid response from server');
         }
       }
 
-      // Reset form and refresh staff
       setFormData(initialFormData);
       setShowForm(false);
       setEditingStaff(null);
