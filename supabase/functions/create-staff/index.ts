@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.39.3';
+import { generate } from 'npm:generate-password@1.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,10 +28,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      return new Response(
-        JSON.stringify({ error: 'Missing environment variables' }),
-        { headers: corsHeaders, status: 500 }
-      );
+      throw new Error('Missing environment variables');
     }
 
     const supabaseAdmin = createClient(
@@ -46,20 +44,14 @@ Deno.serve(async (req) => {
     // Verify admin authorization
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
-        { headers: corsHeaders, status: 401 }
-      );
+      throw new Error('No authorization header');
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user: caller }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !caller) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        { headers: corsHeaders, status: 401 }
-      );
+      throw new Error('Invalid token');
     }
 
     // Verify caller is admin
@@ -70,10 +62,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (profileError || !callerProfile || callerProfile.role !== 'admin') {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - Admin access required' }),
-        { headers: corsHeaders, status: 403 }
-      );
+      throw new Error('Unauthorized - Admin access required');
     }
 
     // Get request payload
@@ -81,10 +70,7 @@ Deno.serve(async (req) => {
     const { name, email, position_id, office_id } = payload;
 
     if (!name || !email) {
-      return new Response(
-        JSON.stringify({ error: 'Name and email are required' }),
-        { headers: corsHeaders, status: 400 }
-      );
+      throw new Error('Name and email are required');
     }
 
     // Check if staff member already exists
@@ -95,10 +81,29 @@ Deno.serve(async (req) => {
       .single();
 
     if (existingStaff) {
-      return new Response(
-        JSON.stringify({ error: 'A staff member with this email already exists' }),
-        { headers: corsHeaders, status: 400 }
-      );
+      throw new Error('A staff member with this email already exists');
+    }
+
+    // Generate verification code
+    const verificationCode = generate({
+      length: 6,
+      numbers: true,
+      uppercase: false,
+      lowercase: false,
+      symbols: false
+    });
+
+    // Create verification code record
+    const { error: verificationError } = await supabaseAdmin
+      .from('verification_codes')
+      .insert({
+        email,
+        code: verificationCode,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours expiry
+      });
+
+    if (verificationError) {
+      throw verificationError;
     }
 
     // Create staff record
@@ -117,9 +122,21 @@ Deno.serve(async (req) => {
       throw staffError;
     }
 
+    // Send verification email
+    const { error: emailError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      data: {
+        verification_code: verificationCode,
+        name: name
+      }
+    });
+
+    if (emailError) {
+      throw emailError;
+    }
+
     return new Response(
       JSON.stringify({ 
-        message: 'Staff created successfully',
+        message: 'Staff created successfully. Verification email sent.',
         staff 
       }),
       { headers: corsHeaders, status: 200 }
