@@ -28,7 +28,10 @@ Deno.serve(async (req) => {
 
     if (!supabaseUrl || !supabaseServiceKey) {
       return new Response(
-        JSON.stringify({ error: 'Missing environment variables' }),
+        JSON.stringify({ 
+          success: false,
+          message: 'Missing environment variables' 
+        }),
         { headers: corsHeaders, status: 500 }
       );
     }
@@ -47,7 +50,10 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
+        JSON.stringify({ 
+          success: false,
+          message: 'No authorization header' 
+        }),
         { headers: corsHeaders, status: 401 }
       );
     }
@@ -57,7 +63,10 @@ Deno.serve(async (req) => {
     
     if (authError || !caller) {
       return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
+        JSON.stringify({ 
+          success: false,
+          message: 'Invalid token' 
+        }),
         { headers: corsHeaders, status: 401 }
       );
     }
@@ -71,7 +80,10 @@ Deno.serve(async (req) => {
 
     if (profileError || !callerProfile || callerProfile.role !== 'admin') {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized - Admin access required' }),
+        JSON.stringify({ 
+          success: false,
+          message: 'Unauthorized - Admin access required' 
+        }),
         { headers: corsHeaders, status: 403 }
       );
     }
@@ -82,7 +94,10 @@ Deno.serve(async (req) => {
 
     if (!name || !email) {
       return new Response(
-        JSON.stringify({ error: 'Name and email are required' }),
+        JSON.stringify({ 
+          success: false,
+          message: 'Name and email are required' 
+        }),
         { headers: corsHeaders, status: 400 }
       );
     }
@@ -96,7 +111,27 @@ Deno.serve(async (req) => {
 
     if (existingStaff) {
       return new Response(
-        JSON.stringify({ error: 'A staff member with this email already exists' }),
+        JSON.stringify({ 
+          success: false,
+          message: 'A staff member with this email already exists' 
+        }),
+        { headers: corsHeaders, status: 400 }
+      );
+    }
+
+    // Check if profile exists
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existingProfile) {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: 'A user with this email already exists' 
+        }),
         { headers: corsHeaders, status: 400 }
       );
     }
@@ -114,11 +149,19 @@ Deno.serve(async (req) => {
       .single();
 
     if (staffError) {
-      throw staffError;
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: 'Failed to create staff member',
+          details: staffError.message
+        }),
+        { headers: corsHeaders, status: 500 }
+      );
     }
 
     return new Response(
       JSON.stringify({ 
+        success: true,
         message: 'Staff created successfully',
         staff 
       }),
@@ -129,7 +172,8 @@ Deno.serve(async (req) => {
     console.error('Error in create-staff function:', error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        success: false,
+        message: error instanceof Error ? error.message : 'An unexpected error occurred'
       }),
       { headers: corsHeaders, status: 500 }
     );
