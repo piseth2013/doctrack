@@ -25,15 +25,12 @@ const SettingsPage: React.FC = () => {
       const { data, error } = await supabase
         .from('logo_settings')
         .select('logo_url')
-        .limit(1)
         .single();
 
       if (error) throw error;
       setLogoUrl(data?.logo_url);
     } catch (err) {
       console.error('Error fetching logo:', err);
-      // Don't show the error to the user as it's not critical
-      setLogoUrl(null);
     }
   };
 
@@ -87,24 +84,13 @@ const SettingsPage: React.FC = () => {
         .from('logoUpload')
         .getPublicUrl(fileName);
 
-      // Get logo settings record or create if doesn't exist
-      let { data: settingsData, error: settingsError } = await supabase
+      // Get logo settings record
+      const { data: settingsData, error: settingsError } = await supabase
         .from('logo_settings')
         .select('id')
-        .limit(1)
         .single();
 
-      if (settingsError) {
-        // If no record exists, create one
-        const { data: newSettings, error: createError } = await supabase
-          .from('logo_settings')
-          .insert([{}])
-          .select('id')
-          .single();
-          
-        if (createError) throw createError;
-        settingsData = newSettings;
-      }
+      if (settingsError) throw settingsError;
 
       // Update logo settings
       const { error: updateError } = await supabase
