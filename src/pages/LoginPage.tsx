@@ -60,7 +60,7 @@ const LoginPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
@@ -71,7 +71,7 @@ const LoginPage: React.FC = () => {
             <img 
               src={logoUrl} 
               alt="Company Logo" 
-              className="h-16 w-auto"
+              className="h-16 w-auto object-contain"
             />
           ) : (
             <div className="rounded-full bg-primary-100 p-3">
