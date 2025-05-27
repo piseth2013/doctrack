@@ -11,23 +11,9 @@ const corsHeaders = {
 interface CreateStaffPayload {
   name: string;
   email: string;
-  position_id?: string;
-  office_id?: string;
+  position_id?: string | null;
+  office_id?: string | null;
 }
-
-interface ErrorResponse {
-  error: {
-    message: string;
-  };
-  staff: null;
-}
-
-interface SuccessResponse {
-  message: string;
-  staff: any;
-}
-
-type ResponseData = ErrorResponse | SuccessResponse;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -42,11 +28,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      const response: ResponseData = {
-        error: { message: 'Server configuration error' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+      throw new Error('Missing environment variables');
     }
 
     const supabaseAdmin = createClient(
@@ -62,22 +44,14 @@ Deno.serve(async (req) => {
     // Verify admin authorization
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      const response: ResponseData = {
-        error: { message: 'Authorization header is missing' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+      throw new Error('No authorization header');
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user: caller }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !caller) {
-      const response: ResponseData = {
-        error: { message: 'Invalid authentication token' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+      throw new Error('Invalid token');
     }
 
     // Verify caller is admin
@@ -87,144 +61,33 @@ Deno.serve(async (req) => {
       .eq('id', caller.id)
       .single();
 
-    if (profileError) {
-      const response: ResponseData = {
-        error: { message: 'Error fetching user profile' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
-    }
-
-    if (!callerProfile || callerProfile.role !== 'admin') {
-      const response: ResponseData = {
-        error: { message: 'Unauthorized - Admin access required' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+    if (profileError || !callerProfile || callerProfile.role !== 'admin') {
+      throw new Error('Unauthorized - Admin access required');
     }
 
     // Get request payload
-    let payload: CreateStaffPayload;
-    try {
-      payload = await req.json();
-    } catch (error) {
-      const response: ResponseData = {
-        error: { message: 'Invalid request payload' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
-    }
-
+    const payload: CreateStaffPayload = await req.json();
     const { name, email, position_id, office_id } = payload;
 
     if (!name || !email) {
-      const response: ResponseData = {
-        error: { message: 'Name and email are required' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      const response: ResponseData = {
-        error: { message: 'Invalid email format' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+      throw new Error('Name and email are required');
     }
 
     // Check if staff member already exists
-    const { data: existingStaff, error: existingStaffError } = await supabaseAdmin
+    const { data: existingStaff } = await supabaseAdmin
       .from('staff')
       .select('id')
       .eq('email', email)
       .single();
 
-    if (existingStaffError && existingStaffError.code !== 'PGRST116') {
-      const response: ResponseData = {
-        error: { message: 'Error checking existing staff' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
-    }
-
     if (existingStaff) {
-      const response: ResponseData = {
-        error: { message: 'A staff member with this email already exists' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
-    }
-
-    // Validate position_id if provided
-    if (position_id) {
-      const { data: position, error: positionError } = await supabaseAdmin
-        .from('positions')
-        .select('id')
-        .eq('id', position_id)
-        .single();
-
-      if (positionError || !position) {
-        const response: ResponseData = {
-          error: { message: 'Invalid position selected' },
-          staff: null
-        };
-        return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
-      }
-    }
-
-    // Validate office_id if provided
-    if (office_id) {
-      const { data: office, error: officeError } = await supabaseAdmin
-        .from('offices')
-        .select('id')
-        .eq('id', office_id)
-        .single();
-
-      if (officeError || !office) {
-        const response: ResponseData = {
-          error: { message: 'Invalid office selected' },
-          staff: null
-        };
-        return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
-      }
-    }
-
-    // Generate a temporary password for the new user
-    const tempPassword = generate({
-      length: 12,
-      numbers: true,
-      uppercase: true,
-      lowercase: true,
-      symbols: true
-    });
-
-    // Create the user in Supabase Auth
-    const { data: newUser, error: userError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: {
-        name,
-        role: 'user' // Set default role
-      }
-    });
-
-    if (userError) {
-      const response: ResponseData = {
-        error: { message: `Error creating user: ${userError.message}` },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+      throw new Error('A staff member with this email already exists');
     }
 
     // Create staff record
     const { data: staff, error: staffError } = await supabaseAdmin
       .from('staff')
       .insert({
-        id: newUser.user.id,
         name,
         email,
         position_id: position_id || null,
@@ -234,14 +97,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (staffError) {
-      // If staff creation fails, clean up the auth user
-      await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
-      
-      const response: ResponseData = {
-        error: { message: `Error creating staff record: ${staffError.message}` },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+      throw new Error(`Error creating staff record: ${staffError.message}`);
     }
 
     // Generate verification code
@@ -263,60 +119,30 @@ Deno.serve(async (req) => {
       });
 
     if (verificationError) {
-      // If verification code creation fails, clean up the created records
-      await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
+      // Clean up staff record if verification code creation fails
       await supabaseAdmin
         .from('staff')
         .delete()
         .eq('id', staff.id);
-
-      const response: ResponseData = {
-        error: { message: 'Error creating verification code' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+      throw new Error('Error creating verification code');
     }
 
-    // Send password reset email to allow user to set their own password
-    const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'recovery',
-      email,
-    });
-
-    if (resetError) {
-      // If email fails, clean up the created records
-      await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
-      await supabaseAdmin
-        .from('staff')
-        .delete()
-        .eq('id', staff.id);
-      await supabaseAdmin
-        .from('verification_codes')
-        .delete()
-        .eq('email', email);
-
-      const response: ResponseData = {
-        error: { message: 'Error sending password reset email' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
-    }
-
-    const response: ResponseData = {
-      message: 'Staff created successfully. Password reset email sent.',
-      staff
-    };
-
-    return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+    return new Response(
+      JSON.stringify({ 
+        message: 'Staff created successfully',
+        staff,
+        verificationCode 
+      }),
+      { headers: corsHeaders }
+    );
 
   } catch (error) {
     console.error('Error in create-staff function:', error);
-    const response: ResponseData = {
-      error: { 
-        message: error instanceof Error ? error.message : 'An unexpected error occurred'
-      },
-      staff: null
-    };
-    return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'An unexpected error occurred'
+      }),
+      { headers: corsHeaders }
+    );
   }
 });
