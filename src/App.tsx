@@ -8,7 +8,6 @@ import DocumentsPage from './pages/DocumentsPage';
 import DocumentDetailPage from './pages/DocumentDetailPage';
 import NewDocumentPage from './pages/NewDocumentPage';
 import SettingsPage from './pages/SettingsPage';
-import VerifyStaffPage from './pages/VerifyStaffPage';
 
 function App() {
   return (
@@ -16,7 +15,6 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/verify-staff" element={<VerifyStaffPage />} />
           
           <Route 
             path="/" 
@@ -26,7 +24,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/dashboard\" replace />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="documents" element={<DocumentsPage />} />
             <Route path="documents/:id" element={<DocumentDetailPage />} />
@@ -34,11 +32,11 @@ function App() {
             <Route path="settings" element={<SettingsPage />} />
           </Route>
           
-          <Route path="*" element={<Navigate to="/dashboard\" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
   );
 }
 
-export default App;
+export default App
