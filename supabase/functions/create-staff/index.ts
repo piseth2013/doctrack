@@ -15,6 +15,20 @@ interface CreateStaffPayload {
   office_id?: string;
 }
 
+interface ErrorResponse {
+  error: {
+    message: string;
+  };
+  staff: null;
+}
+
+interface SuccessResponse {
+  message: string;
+  staff: any;
+}
+
+type ResponseData = ErrorResponse | SuccessResponse;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
@@ -28,10 +42,11 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Server configuration error' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     const supabaseAdmin = createClient(
@@ -47,20 +62,22 @@ Deno.serve(async (req) => {
     // Verify admin authorization
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Authorization header is missing' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Authorization header is missing' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user: caller }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !caller) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid authentication token' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Invalid authentication token' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     // Verify caller is admin
@@ -71,17 +88,19 @@ Deno.serve(async (req) => {
       .single();
 
     if (profileError) {
-      return new Response(
-        JSON.stringify({ error: 'Error fetching user profile' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Error fetching user profile' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     if (!callerProfile || callerProfile.role !== 'admin') {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - Admin access required' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Unauthorized - Admin access required' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     // Get request payload
@@ -89,28 +108,31 @@ Deno.serve(async (req) => {
     try {
       payload = await req.json();
     } catch (error) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid request payload' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Invalid request payload' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     const { name, email, position_id, office_id } = payload;
 
     if (!name || !email) {
-      return new Response(
-        JSON.stringify({ error: 'Name and email are required' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Name and email are required' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid email format' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Invalid email format' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     // Check if staff member already exists
@@ -121,17 +143,19 @@ Deno.serve(async (req) => {
       .single();
 
     if (existingStaffError && existingStaffError.code !== 'PGRST116') {
-      return new Response(
-        JSON.stringify({ error: 'Error checking existing staff' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Error checking existing staff' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     if (existingStaff) {
-      return new Response(
-        JSON.stringify({ error: 'A staff member with this email already exists' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'A staff member with this email already exists' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     // Generate verification code
@@ -153,10 +177,11 @@ Deno.serve(async (req) => {
       });
 
     if (verificationError) {
-      return new Response(
-        JSON.stringify({ error: 'Error creating verification code' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Error creating verification code' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     // Create staff record
@@ -172,10 +197,11 @@ Deno.serve(async (req) => {
       .single();
 
     if (staffError) {
-      return new Response(
-        JSON.stringify({ error: 'Error creating staff record' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Error creating staff record' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     // Send verification email
@@ -198,27 +224,28 @@ Deno.serve(async (req) => {
         .delete()
         .eq('email', email);
 
-      return new Response(
-        JSON.stringify({ error: 'Error sending verification email' }),
-        { headers: corsHeaders, status: 200 }
-      );
+      const response: ResponseData = {
+        error: { message: 'Error sending verification email' },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
-    return new Response(
-      JSON.stringify({ 
-        message: 'Staff created successfully. Verification email sent.',
-        staff 
-      }),
-      { headers: corsHeaders, status: 200 }
-    );
+    const response: ResponseData = {
+      message: 'Staff created successfully. Verification email sent.',
+      staff
+    };
+
+    return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
 
   } catch (error) {
     console.error('Error in create-staff function:', error);
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : 'An unexpected error occurred'
-      }),
-      { headers: corsHeaders, status: 200 }
-    );
+    const response: ResponseData = {
+      error: { 
+        message: error instanceof Error ? error.message : 'An unexpected error occurred'
+      },
+      staff: null
+    };
+    return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
   }
 });

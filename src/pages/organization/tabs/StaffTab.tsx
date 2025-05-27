@@ -181,27 +181,20 @@ const StaffTab: React.FC = () => {
           body: formData,
         });
 
-        if (!response.data && response.error) {
-          let errorMessage = 'Failed to create staff member';
-          
-          // Handle specific error cases
-          if (response.error.message) {
-            errorMessage = response.error.message;
-          } else if (response.error.status === 409) {
-            errorMessage = 'A staff member with this email already exists';
-          } else if (response.error.status === 401 || response.error.status === 403) {
-            errorMessage = 'You do not have permission to create staff members';
-          } else if (response.error.status === 400) {
-            errorMessage = 'Invalid input data';
-          } else if (response.error.status === 500) {
-            errorMessage = 'Server configuration error';
-          }
-          
-          throw new Error(errorMessage);
+        if (response.error) {
+          throw new Error(response.error.message || 'Failed to create staff member');
         }
 
-        if (!response.data?.staff) {
-          throw new Error('Invalid response from server');
+        if (!response.data) {
+          throw new Error('No response data received from server');
+        }
+
+        if (response.data.error) {
+          throw new Error(response.data.error.message);
+        }
+
+        if (!response.data.staff) {
+          throw new Error('Staff data not returned from server');
         }
       }
 
