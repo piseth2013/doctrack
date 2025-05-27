@@ -207,7 +207,8 @@ Deno.serve(async (req) => {
       password: tempPassword,
       email_confirm: true,
       user_metadata: {
-        name
+        name,
+        role: 'user' // Set default role
       }
     });
 
@@ -219,11 +220,11 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
-    // Create staff record with the new user's ID
+    // Create staff record
     const { data: staff, error: staffError } = await supabaseAdmin
       .from('staff')
       .insert({
-        id: newUser.user.id, // Use the auth user's ID
+        id: newUser.user.id,
         name,
         email,
         position_id: position_id || null,
