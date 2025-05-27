@@ -158,6 +158,61 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
+    // Validate position_id if provided
+    if (position_id) {
+      const { data: position, error: positionError } = await supabaseAdmin
+        .from('positions')
+        .select('id')
+        .eq('id', position_id)
+        .single();
+
+      if (positionError || !position) {
+        const response: ResponseData = {
+          error: { message: 'Invalid position selected' },
+          staff: null
+        };
+        return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+      }
+    }
+
+    // Validate office_id if provided
+    if (office_id) {
+      const { data: office, error: officeError } = await supabaseAdmin
+        .from('offices')
+        .select('id')
+        .eq('id', office_id)
+        .single();
+
+      if (officeError || !office) {
+        const response: ResponseData = {
+          error: { message: 'Invalid office selected' },
+          staff: null
+        };
+        return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+      }
+    }
+
+    // Create staff record first
+    const { data: staff, error: staffError } = await supabaseAdmin
+      .from('staff')
+      .insert({
+        name,
+        email,
+        position_id: position_id || null,
+        office_id: office_id || null,
+      })
+      .select('*, positions(*), offices(*)')
+      .single();
+
+    if (staffError) {
+      console.error('Staff creation error:', staffError);
+      const response: ResponseData = {
+        error: { message: `Error creating staff record: ${staffError.message}` },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+    }
+
     // Generate verification code
     const verificationCode = generate({
       length: 6,
@@ -177,28 +232,14 @@ Deno.serve(async (req) => {
       });
 
     if (verificationError) {
+      // If verification code creation fails, clean up the staff record
+      await supabaseAdmin
+        .from('staff')
+        .delete()
+        .eq('id', staff.id);
+
       const response: ResponseData = {
         error: { message: 'Error creating verification code' },
-        staff: null
-      };
-      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
-    }
-
-    // Create staff record
-    const { data: staff, error: staffError } = await supabaseAdmin
-      .from('staff')
-      .insert({
-        name,
-        email,
-        position_id: position_id || null,
-        office_id: office_id || null,
-      })
-      .select('*, positions(*), offices(*)')
-      .single();
-
-    if (staffError) {
-      const response: ResponseData = {
-        error: { message: 'Error creating staff record' },
         staff: null
       };
       return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
@@ -213,7 +254,7 @@ Deno.serve(async (req) => {
     });
 
     if (emailError) {
-      // If email fails, we should clean up the created records
+      // If email fails, clean up the created records
       await supabaseAdmin
         .from('staff')
         .delete()
