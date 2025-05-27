@@ -177,35 +177,13 @@ const StaffTab: React.FC = () => {
 
         if (error) throw error;
       } else {
-        // Log the data being sent to help with debugging
-        console.log('Creating staff with data:', {
-          name: formData.name,
-          email: formData.email,
-          position_id: formData.position_id || null,
-          office_id: formData.office_id || null,
-        });
-
         const { data, error } = await supabase.functions.invoke('create-staff', {
-          body: {
-            name: formData.name,
-            email: formData.email,
-            position_id: formData.position_id || null,
-            office_id: formData.office_id || null,
-          }
+          body: formData,
         });
 
-        if (error) {
-          console.error('Edge function error:', error);
-          throw new Error(error.message || 'Failed to create staff member');
-        }
-
-        if (!data) {
-          throw new Error('No response received from server');
-        }
-
-        if (data.error) {
-          console.error('Server response error:', data.error);
-          throw new Error(data.error.message || 'Error creating staff record');
+        if (error) throw error;
+        if (!data?.staff) {
+          throw new Error('Invalid response from server');
         }
       }
 

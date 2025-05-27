@@ -11,8 +11,8 @@ const corsHeaders = {
 interface CreateStaffPayload {
   name: string;
   email: string;
-  position_id?: string | null;
-  office_id?: string | null;
+  position_id?: string;
+  office_id?: string;
 }
 
 Deno.serve(async (req) => {
@@ -84,22 +84,6 @@ Deno.serve(async (req) => {
       throw new Error('A staff member with this email already exists');
     }
 
-    // Create staff record
-    const { data: staff, error: staffError } = await supabaseAdmin
-      .from('staff')
-      .insert({
-        name,
-        email,
-        position_id: position_id || null,
-        office_id: office_id || null,
-      })
-      .select('*, positions(*), offices(*)')
-      .single();
-
-    if (staffError) {
-      throw new Error(`Error creating staff record: ${staffError.message}`);
-    }
-
     // Generate verification code
     const verificationCode = generate({
       length: 6,
@@ -119,21 +103,43 @@ Deno.serve(async (req) => {
       });
 
     if (verificationError) {
-      // Clean up staff record if verification code creation fails
-      await supabaseAdmin
-        .from('staff')
-        .delete()
-        .eq('id', staff.id);
-      throw new Error('Error creating verification code');
+      throw verificationError;
+    }
+
+    // Create staff record
+    const { data: staff, error: staffError } = await supabaseAdmin
+      .from('staff')
+      .insert({
+        name,
+        email,
+        position_id: position_id || null,
+        office_id: office_id || null,
+      })
+      .select('*, positions(*), offices(*)')
+      .single();
+
+    if (staffError) {
+      throw staffError;
+    }
+
+    // Send verification email
+    const { error: emailError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      data: {
+        verification_code: verificationCode,
+        name: name
+      }
+    });
+
+    if (emailError) {
+      throw emailError;
     }
 
     return new Response(
       JSON.stringify({ 
-        message: 'Staff created successfully',
-        staff,
-        verificationCode 
+        message: 'Staff created successfully. Verification email sent.',
+        staff 
       }),
-      { headers: corsHeaders }
+      { headers: corsHeaders, status: 200 }
     );
 
   } catch (error) {
@@ -142,7 +148,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         error: error instanceof Error ? error.message : 'An unexpected error occurred'
       }),
-      { headers: corsHeaders }
+      { headers: corsHeaders, status: 500 }
     );
   }
 });
