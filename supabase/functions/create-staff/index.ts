@@ -28,7 +28,10 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing environment variables');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { headers: corsHeaders, status: 500 }
+      );
     }
 
     const supabaseAdmin = createClient(
@@ -44,14 +47,20 @@ Deno.serve(async (req) => {
     // Verify admin authorization
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Authorization header is missing' }),
+        { headers: corsHeaders, status: 401 }
+      );
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user: caller }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !caller) {
-      throw new Error('Invalid token');
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { headers: corsHeaders, status: 401 }
+      );
     }
 
     // Verify caller is admin
@@ -61,27 +70,68 @@ Deno.serve(async (req) => {
       .eq('id', caller.id)
       .single();
 
-    if (profileError || !callerProfile || callerProfile.role !== 'admin') {
-      throw new Error('Unauthorized - Admin access required');
+    if (profileError) {
+      return new Response(
+        JSON.stringify({ error: 'Error fetching user profile' }),
+        { headers: corsHeaders, status: 500 }
+      );
+    }
+
+    if (!callerProfile || callerProfile.role !== 'admin') {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Admin access required' }),
+        { headers: corsHeaders, status: 403 }
+      );
     }
 
     // Get request payload
-    const payload: CreateStaffPayload = await req.json();
+    let payload: CreateStaffPayload;
+    try {
+      payload = await req.json();
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request payload' }),
+        { headers: corsHeaders, status: 400 }
+      );
+    }
+
     const { name, email, position_id, office_id } = payload;
 
     if (!name || !email) {
-      throw new Error('Name and email are required');
+      return new Response(
+        JSON.stringify({ error: 'Name and email are required' }),
+        { headers: corsHeaders, status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email format' }),
+        { headers: corsHeaders, status: 400 }
+      );
     }
 
     // Check if staff member already exists
-    const { data: existingStaff } = await supabaseAdmin
+    const { data: existingStaff, error: existingStaffError } = await supabaseAdmin
       .from('staff')
       .select('id')
       .eq('email', email)
       .single();
 
+    if (existingStaffError && existingStaffError.code !== 'PGRST116') {
+      return new Response(
+        JSON.stringify({ error: 'Error checking existing staff' }),
+        { headers: corsHeaders, status: 500 }
+      );
+    }
+
     if (existingStaff) {
-      throw new Error('A staff member with this email already exists');
+      return new Response(
+        JSON.stringify({ error: 'A staff member with this email already exists' }),
+        { headers: corsHeaders, status: 409 }
+      );
     }
 
     // Generate verification code
@@ -103,7 +153,10 @@ Deno.serve(async (req) => {
       });
 
     if (verificationError) {
-      throw verificationError;
+      return new Response(
+        JSON.stringify({ error: 'Error creating verification code' }),
+        { headers: corsHeaders, status: 500 }
+      );
     }
 
     // Create staff record
@@ -119,7 +172,10 @@ Deno.serve(async (req) => {
       .single();
 
     if (staffError) {
-      throw staffError;
+      return new Response(
+        JSON.stringify({ error: 'Error creating staff record' }),
+        { headers: corsHeaders, status: 500 }
+      );
     }
 
     // Send verification email
@@ -131,7 +187,21 @@ Deno.serve(async (req) => {
     });
 
     if (emailError) {
-      throw emailError;
+      // If email fails, we should clean up the created records
+      await supabaseAdmin
+        .from('staff')
+        .delete()
+        .eq('id', staff.id);
+      
+      await supabaseAdmin
+        .from('verification_codes')
+        .delete()
+        .eq('email', email);
+
+      return new Response(
+        JSON.stringify({ error: 'Error sending verification email' }),
+        { headers: corsHeaders, status: 500 }
+      );
     }
 
     return new Response(

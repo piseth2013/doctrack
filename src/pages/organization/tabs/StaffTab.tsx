@@ -177,12 +177,20 @@ const StaffTab: React.FC = () => {
 
         if (error) throw error;
       } else {
-        const { data, error } = await supabase.functions.invoke('create-staff', {
+        const response = await supabase.functions.invoke('create-staff', {
           body: formData,
         });
 
-        if (error) throw error;
-        if (!data?.staff) {
+        if (!response.data && response.error) {
+          throw new Error(response.error.message || 'Failed to create staff member');
+        }
+
+        const responseData = response.data;
+        if (responseData.error) {
+          throw new Error(responseData.error);
+        }
+
+        if (!responseData.staff) {
           throw new Error('Invalid response from server');
         }
       }
