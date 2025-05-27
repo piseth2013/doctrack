@@ -186,7 +186,7 @@ const StaffTab: React.FC = () => {
         }
 
         if (!data?.success) {
-          throw new Error(data?.message || 'Invalid response from server');
+          throw new Error(data?.message || 'Failed to create staff member');
         }
       }
 
