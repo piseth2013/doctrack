@@ -25,6 +25,7 @@ const SettingsPage: React.FC = () => {
       const { data, error } = await supabase
         .from('logo_settings')
         .select('logo_url')
+        .limit(1)
         .single();
 
       if (error) throw error;
@@ -88,6 +89,7 @@ const SettingsPage: React.FC = () => {
       const { data: settingsData, error: settingsError } = await supabase
         .from('logo_settings')
         .select('id')
+        .limit(1)
         .single();
 
       if (settingsError) throw settingsError;
