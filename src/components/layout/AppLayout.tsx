@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
 import { 
   FileText, 
@@ -14,12 +14,32 @@ import Avatar from '../ui/Avatar';
 import { twMerge } from 'tailwind-merge';
 import LanguageToggle from './LanguageToggle';
 import { useTranslation } from '../../lib/translations';
+import { supabase } from '../../lib/supabase';
 
 const AppLayout: React.FC = () => {
   const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const location = useLocation();
   const t = useTranslation();
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('logo_settings')
+          .select('logo_url')
+          .single();
+
+        if (error) throw error;
+        setLogoUrl(data?.logo_url);
+      } catch (err) {
+        console.error('Error fetching logo:', err);
+      }
+    };
+
+    fetchLogo();
+  }, []);
 
   const navItems = [
     {
@@ -69,8 +89,16 @@ const AppLayout: React.FC = () => {
       <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
         <div className="flex flex-col flex-grow bg-primary-800 pt-5 pb-4 overflow-y-auto">
           <div className="flex items-center flex-shrink-0 px-4">
-            <div className="flex flex-col items-center">
-              <h1 className="text-white text-2xl font-bold">DocTrack</h1>
+            <div className="flex flex-col items-center w-full">
+              {logoUrl ? (
+                <img 
+                  src={logoUrl} 
+                  alt="Company Logo" 
+                  className="h-12 w-auto mb-2"
+                />
+              ) : (
+                <h1 className="text-white text-2xl font-bold">DocTrack</h1>
+              )}
             </div>
           </div>
           <div className="mt-5 flex-1 flex flex-col">
@@ -123,7 +151,15 @@ const AppLayout: React.FC = () => {
       <div className="md:hidden fixed top-0 left-0 right-0 z-10 bg-white shadow-sm">
         <div className="px-4 py-2 flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-primary-800 text-xl font-bold">DocTrack</h1>
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt="Company Logo" 
+                className="h-8 w-auto"
+              />
+            ) : (
+              <h1 className="text-primary-800 text-xl font-bold">DocTrack</h1>
+            )}
           </div>
           <button
             onClick={toggleMobileMenu}

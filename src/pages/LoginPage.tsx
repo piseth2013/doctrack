@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { FileLock, Mail, Lock } from 'lucide-react';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import { signIn } from '../lib/supabase';
+import { signIn, supabase } from '../lib/supabase';
 import { useAuth } from '../components/auth/AuthWrapper';
 import { useTranslation } from '../lib/translations';
 
@@ -12,8 +12,27 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const { user } = useAuth();
   const t = useTranslation();
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('logo_settings')
+          .select('logo_url')
+          .single();
+
+        if (error) throw error;
+        setLogoUrl(data?.logo_url);
+      } catch (err) {
+        console.error('Error fetching logo:', err);
+      }
+    };
+
+    fetchLogo();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,9 +65,17 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="rounded-full bg-primary-100 p-3">
-            <FileLock size={40} className="text-primary-600" />
-          </div>
+          {logoUrl ? (
+            <img 
+              src={logoUrl} 
+              alt="Company Logo" 
+              className="h-16 w-auto"
+            />
+          ) : (
+            <div className="rounded-full bg-primary-100 p-3">
+              <FileLock size={40} className="text-primary-600" />
+            </div>
+          )}
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           {t('signIn')} DocTrack
