@@ -30,16 +30,9 @@ const AppLayout: React.FC = () => {
           .from('logo_settings')
           .select('logo_url')
           .limit(1)
-          .single();
+          .maybeSingle();
 
-        if (error) {
-          if (error.code === 'PGRST116') {
-            // No logo found, this is okay
-            setLogoUrl(null);
-            return;
-          }
-          throw error;
-        }
+        if (error) throw error;
         setLogoUrl(data?.logo_url || null);
       } catch (err) {
         console.error('Error fetching logo:', err);
