@@ -8,6 +8,7 @@ import DocumentsPage from './pages/DocumentsPage';
 import DocumentDetailPage from './pages/DocumentDetailPage';
 import NewDocumentPage from './pages/NewDocumentPage';
 import SettingsPage from './pages/SettingsPage';
+import VerifyStaffPage from './pages/VerifyStaffPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/verify-staff" element={<VerifyStaffPage />} />
           
           <Route 
             path="/" 
@@ -39,4 +41,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
