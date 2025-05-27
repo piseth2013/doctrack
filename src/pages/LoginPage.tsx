@@ -22,12 +22,21 @@ const LoginPage: React.FC = () => {
         const { data, error } = await supabase
           .from('logo_settings')
           .select('logo_url')
+          .limit(1)
           .single();
 
-        if (error) throw error;
-        setLogoUrl(data?.logo_url);
+        if (error) {
+          if (error.code === 'PGRST116') {
+            // No logo found, this is okay
+            setLogoUrl(null);
+            return;
+          }
+          throw error;
+        }
+        setLogoUrl(data?.logo_url || null);
       } catch (err) {
         console.error('Error fetching logo:', err);
+        setLogoUrl(null);
       }
     };
 
@@ -58,7 +67,7 @@ const LoginPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
