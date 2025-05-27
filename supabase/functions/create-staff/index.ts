@@ -192,10 +192,38 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Create staff record first
+    // Generate a temporary password for the new user
+    const tempPassword = generate({
+      length: 12,
+      numbers: true,
+      uppercase: true,
+      lowercase: true,
+      symbols: true
+    });
+
+    // Create the user in Supabase Auth
+    const { data: newUser, error: userError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: {
+        name
+      }
+    });
+
+    if (userError) {
+      const response: ResponseData = {
+        error: { message: `Error creating user: ${userError.message}` },
+        staff: null
+      };
+      return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
+    }
+
+    // Create staff record with the new user's ID
     const { data: staff, error: staffError } = await supabaseAdmin
       .from('staff')
       .insert({
+        id: newUser.user.id, // Use the auth user's ID
         name,
         email,
         position_id: position_id || null,
@@ -205,7 +233,9 @@ Deno.serve(async (req) => {
       .single();
 
     if (staffError) {
-      console.error('Staff creation error:', staffError);
+      // If staff creation fails, clean up the auth user
+      await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
+      
       const response: ResponseData = {
         error: { message: `Error creating staff record: ${staffError.message}` },
         staff: null
@@ -232,7 +262,8 @@ Deno.serve(async (req) => {
       });
 
     if (verificationError) {
-      // If verification code creation fails, clean up the staff record
+      // If verification code creation fails, clean up the created records
+      await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
       await supabaseAdmin
         .from('staff')
         .delete()
@@ -245,35 +276,33 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
-    // Send verification email
-    const { error: emailError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      data: {
-        verification_code: verificationCode,
-        name: name
-      }
+    // Send password reset email to allow user to set their own password
+    const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'recovery',
+      email,
     });
 
-    if (emailError) {
+    if (resetError) {
       // If email fails, clean up the created records
+      await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
       await supabaseAdmin
         .from('staff')
         .delete()
         .eq('id', staff.id);
-      
       await supabaseAdmin
         .from('verification_codes')
         .delete()
         .eq('email', email);
 
       const response: ResponseData = {
-        error: { message: 'Error sending verification email' },
+        error: { message: 'Error sending password reset email' },
         staff: null
       };
       return new Response(JSON.stringify(response), { headers: corsHeaders, status: 200 });
     }
 
     const response: ResponseData = {
-      message: 'Staff created successfully. Verification email sent.',
+      message: 'Staff created successfully. Password reset email sent.',
       staff
     };
 
