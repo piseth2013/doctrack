@@ -59,9 +59,9 @@ const DashboardPage: React.FC = () => {
 
         if (recentError) throw recentError;
         
-        // Get user count
+        // Get user count - Changed from 'profiles' to 'users'
         const { count: userCountData, error: userError } = await supabase
-          .from('profiles')
+          .from('users')
           .select('*', { count: 'exact', head: true });
 
         if (userError) throw userError;
