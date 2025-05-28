@@ -31,11 +31,13 @@ const DashboardPage: React.FC = () => {
   const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([]);
   const [userCount, setUserCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const t = useTranslation();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         // Get document counts using a single query
         const { data: documents, error: countError } = await supabase
@@ -59,18 +61,24 @@ const DashboardPage: React.FC = () => {
 
         if (recentError) throw recentError;
         
-        // Get user count - Changed from 'profiles' to 'users'
-        const { count: userCountData, error: userError } = await supabase
+        // Get user count with proper error handling
+        const { data: users, error: userError, count } = await supabase
           .from('users')
-          .select('*', { count: 'exact', head: true });
+          .select('id', { count: 'exact' });
 
-        if (userError) throw userError;
+        if (userError) {
+          console.error('Error fetching user count:', userError);
+          // Continue with other data even if user count fails
+          setUserCount(0);
+        } else {
+          setUserCount(count || 0);
+        }
         
         setDocumentCounts(counts || { total: 0, pending: 0, approved: 0, rejected: 0 });
         setRecentDocuments(recentDocs || []);
-        setUserCount(userCountData || 0);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setError('Failed to load dashboard data. Please try again later.');
       } finally {
         setIsLoading(false);
       }
@@ -82,7 +90,23 @@ const DashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center py-20">
-        <Loader size="lg\" text="Loading dashboard data..." />
+        <Loader size="lg" text="Loading dashboard data..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center py-20">
+        <div className="text-center">
+          <p className="text-error-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-primary-600 hover:text-primary-800"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
