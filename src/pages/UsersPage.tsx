@@ -52,7 +52,7 @@ const UsersPage: React.FC = () => {
         if (!user) return;
 
         const { data, error } = await supabase
-          .from('users')
+          .from('profiles')
           .select('role')
           .eq('id', user.id)
           .maybeSingle();
@@ -81,7 +81,7 @@ const UsersPage: React.FC = () => {
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -169,7 +169,7 @@ const UsersPage: React.FC = () => {
       if (editingUserId) {
         // Update existing user
         const { error: updateError } = await supabase
-          .from('users')
+          .from('profiles')
           .update({
             email: formData.email,
             full_name: formData.full_name,
