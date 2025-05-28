@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
 
     // Verify caller is admin
     const { data: callerProfile, error: profileError } = await supabaseAdmin
-      .from('profiles')
+      .from('users')
       .select('role')
       .eq('id', caller.id)
       .single();
