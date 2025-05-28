@@ -45,13 +45,13 @@ Deno.serve(async (req) => {
     }
 
     // Verify caller is an admin
-    const { data: callerUser, error: userError } = await supabaseAdmin
-      .from('users')
+    const { data: callerProfile, error: profileError } = await supabaseAdmin
+      .from('profiles')
       .select('role')
       .eq('id', caller.id)
       .single();
 
-    if (userError || !callerUser || callerUser.role !== 'admin') {
+    if (profileError || !callerProfile || callerProfile.role !== 'admin') {
       throw new Error('Unauthorized - Admin access required');
     }
 
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
 
     // Verify target user exists and is not an admin
     const { data: targetUser, error: targetUserError } = await supabaseAdmin
-      .from('users')
+      .from('profiles')
       .select('role')
       .eq('id', userId)
       .single();
@@ -87,7 +87,10 @@ Deno.serve(async (req) => {
       JSON.stringify({ 
         message: 'User deleted successfully'
       }),
-      { headers: corsHeaders, status: 200 }
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      },
     );
 
   } catch (error) {
@@ -95,7 +98,10 @@ Deno.serve(async (req) => {
       JSON.stringify({
         error: error instanceof Error ? error.message : 'An unexpected error occurred',
       }),
-      { headers: corsHeaders, status: 400 }
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      },
     );
   }
 });
