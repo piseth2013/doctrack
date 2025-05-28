@@ -5,14 +5,30 @@ import type { Database } from './database.types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+// Enhanced error checking for environment variables
+if (!supabaseUrl) {
+  throw new Error('Missing VITE_SUPABASE_URL environment variable');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+if (!supabaseAnonKey) {
+  throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable');
+}
+
+// Ensure URL uses HTTPS
+const secureSupabaseUrl = supabaseUrl.replace('http://', 'https://');
+
+export const supabase = createClient<Database>(secureSupabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+  },
+  global: {
+    fetch: (url, options) => {
+      return fetch(url, {
+        ...options,
+        credentials: 'include',
+      });
+    },
   },
 });
 
