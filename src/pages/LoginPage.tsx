@@ -28,6 +28,7 @@ const LoginPage: React.FC = () => {
         setLogoUrl(data?.logo_url);
       } catch (err) {
         console.error('Error fetching logo:', err);
+        // Don't show error to user since logo is optional
       }
     };
 
@@ -50,7 +51,7 @@ const LoginPage: React.FC = () => {
         }
       }
     } catch (error) {
-      setErrorMessage('An unexpected error occurred');
+      setErrorMessage('An unexpected error occurred. Please try again.');
       console.error('Login error:', error);
     } finally {
       setIsLoading(false);
@@ -58,7 +59,7 @@ const LoginPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (

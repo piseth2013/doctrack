@@ -21,13 +21,12 @@ export const supabase = createClient<Database>(secureSupabaseUrl, supabaseAnonKe
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
   },
   global: {
-    fetch: (url, options) => {
-      return fetch(url, {
-        ...options,
-        credentials: 'include',
-      });
+    headers: {
+      'X-Client-Info': 'doctrack-web',
     },
   },
 });
