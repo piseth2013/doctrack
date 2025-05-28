@@ -67,7 +67,7 @@ export interface Database {
           created_at?: string
         }
       }
-      profiles: {
+      users: {
         Row: {
           id: string
           email: string
