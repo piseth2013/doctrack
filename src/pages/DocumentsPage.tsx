@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, Search, Plus, FileText } from 'lucide-react';
+import { Filter, Search, Plus, FileText, RefreshCw } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import DocumentCard from '../components/documents/DocumentCard';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
@@ -31,53 +31,43 @@ const DocumentsPage: React.FC = () => {
   const statusFilter = searchParams.get('status') || 'all';
   const t = useTranslation();
 
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        // Check if we have a valid Supabase client
-        if (!supabase) {
-          throw new Error('Supabase client is not initialized');
-        }
+  const fetchDocuments = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('documents')
+        .select(`
+          id, 
+          title, 
+          description, 
+          status, 
+          created_at, 
+          updated_at, 
+          user_id,
+          profiles (
+            full_name
+          )
+        `)
+        .order('created_at', { ascending: false });
 
-        let query = supabase
-          .from('documents')
-          .select(`
-            id, 
-            title, 
-            description, 
-            status, 
-            created_at, 
-            updated_at, 
-            user_id,
-            profiles (
-              full_name
-            )
-          `)
-          .order('created_at', { ascending: false });
-
-        if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
-        }
-
-        const { data, error: supabaseError } = await query;
-
-        if (supabaseError) {
-          throw supabaseError;
-        }
-
-        setDocuments(data || []);
-      } catch (err) {
-        console.error('Error fetching documents:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch documents');
-        setDocuments([]);
-      } finally {
-        setIsLoading(false);
+      if (supabaseError) {
+        throw supabaseError;
       }
-    };
 
+      setDocuments(data || []);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching documents:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch documents');
+      setDocuments([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDocuments();
   }, [statusFilter]);
 
@@ -89,10 +79,14 @@ const DocumentsPage: React.FC = () => {
     setSearchQuery(e.target.value);
   };
 
+  const handleRetry = () => {
+    fetchDocuments();
+  };
+
   const filteredDocuments = documents.filter(doc => 
     doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (doc.description && doc.description.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  ).filter(doc => statusFilter === 'all' || doc.status === statusFilter);
 
   if (error) {
     return (
@@ -107,7 +101,8 @@ const DocumentsPage: React.FC = () => {
             <div className="mt-6">
               <Button
                 variant="primary"
-                onClick={() => window.location.reload()}
+                onClick={handleRetry}
+                leftIcon={<RefreshCw size={16} />}
               >
                 {t('tryAgain')}
               </Button>
@@ -160,7 +155,7 @@ const DocumentsPage: React.FC = () => {
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  {t('documents')}
+                  {t('all')}
                 </button>
                 <button
                   onClick={() => handleStatusFilterChange('pending')}
