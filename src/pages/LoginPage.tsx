@@ -22,14 +22,12 @@ const LoginPage: React.FC = () => {
         const { data, error } = await supabase
           .from('logo_settings')
           .select('logo_url')
-          .limit(1)
-          .maybeSingle();
+          .single();
 
         if (error) throw error;
-        setLogoUrl(data?.logo_url || null);
+        setLogoUrl(data?.logo_url);
       } catch (err) {
         console.error('Error fetching logo:', err);
-        setLogoUrl(null);
       }
     };
 
@@ -71,7 +69,7 @@ const LoginPage: React.FC = () => {
             <img 
               src={logoUrl} 
               alt="Company Logo" 
-              className="h-16 w-auto object-contain"
+              className="h-16 w-auto"
             />
           ) : (
             <div className="rounded-full bg-primary-100 p-3">
