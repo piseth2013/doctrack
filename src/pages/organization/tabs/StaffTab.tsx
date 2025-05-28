@@ -58,6 +58,7 @@ const StaffTab: React.FC = () => {
   const [formData, setFormData] = useState<StaffFormData>(initialFormData);
   const [editingStaff, setEditingStaff] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [verificationCode, setVerificationCode] = useState<string | null>(null);
   const t = useTranslation();
 
   const fetchStaff = async () => {
@@ -147,6 +148,7 @@ const StaffTab: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+    setVerificationCode(null);
 
     try {
       if (!formData.name.trim() || !formData.email.trim()) {
@@ -177,26 +179,36 @@ const StaffTab: React.FC = () => {
 
         if (error) throw error;
       } else {
-        const { data, error: functionError } = await supabase.functions.invoke('create-staff', {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-staff`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(formData),
         });
 
-        if (functionError) {
-          throw new Error(functionError.message || 'Failed to create staff member');
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'Failed to create staff member');
         }
 
-        if (!data?.success) {
-          throw new Error(data?.message || 'Failed to create staff member');
+        // Store verification code to show to the user
+        if (result.verificationCode) {
+          setVerificationCode(result.verificationCode);
         }
       }
 
       setFormData(initialFormData);
-      setShowForm(false);
+      if (!verificationCode) {
+        setShowForm(false);
+      }
       setEditingStaff(null);
       await fetchStaff();
     } catch (error) {
       console.error('Error saving staff member:', error);
-      setError(error instanceof Error ? error.message : 'Failed to save staff member');
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -350,6 +362,7 @@ const StaffTab: React.FC = () => {
           onClick={() => {
             setFormData(initialFormData);
             setEditingStaff(null);
+            setVerificationCode(null);
             setShowForm(true);
           }}
         >
@@ -371,65 +384,86 @@ const StaffTab: React.FC = () => {
                   setShowForm(false);
                   setEditingStaff(null);
                   setFormData(initialFormData);
+                  setVerificationCode(null);
                 }}
               >
                 <X size={18} />
               </Button>
             </CardHeader>
             <CardBody className="space-y-4">
-              <Input
-                label={t('staffName')}
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-              <div>
-                <label htmlFor="position_id" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('staffPosition')}
-                </label>
-                <select
-                  id="position_id"
-                  name="position_id"
-                  value={formData.position_id}
-                  onChange={handleInputChange}
-                  className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                >
-                  <option value="">{t('selectPosition')}</option>
-                  {positions.map(position => (
-                    <option key={position.id} value={position.id}>
-                      {position.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="office_id" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('staffOffice')}
-                </label>
-                <select
-                  id="office_id"
-                  name="office_id"
-                  value={formData.office_id}
-                  onChange={handleInputChange}
-                  className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                >
-                  <option value="">{t('selectOffice')}</option>
-                  {offices.map(office => (
-                    <option key={office.id} value={office.id}>
-                      {office.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {verificationCode ? (
+                <div className="bg-success-50 border border-success-200 rounded-md p-4">
+                  <h4 className="text-success-700 font-medium mb-2">Staff member created successfully!</h4>
+                  <p className="text-success-600 mb-4">
+                    Please provide the following verification code to the staff member:
+                  </p>
+                  <div className="bg-white border border-success-300 rounded-md p-3 text-center">
+                    <code className="text-lg font-mono font-bold text-success-700">
+                      {verificationCode}
+                    </code>
+                  </div>
+                  <p className="mt-4 text-sm text-success-600">
+                    The staff member can use this code along with their email to set up their account.
+                    This code will expire in 24 hours.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <Input
+                    label={t('staffName')}
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  <Input
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  <div>
+                    <label htmlFor="position_id" className="block text-sm font-medium text-gray-700 mb-1">
+                      {t('staffPosition')}
+                    </label>
+                    <select
+                      id="position_id"
+                      name="position_id"
+                      value={formData.position_id}
+                      onChange={handleInputChange}
+                      className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    >
+                      <option value="">{t('selectPosition')}</option>
+                      {positions.map(position => (
+                        <option key={position.id} value={position.id}>
+                          {position.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="office_id" className="block text-sm font-medium text-gray-700 mb-1">
+                      {t('staffOffice')}
+                    </label>
+                    <select
+                      id="office_id"
+                      name="office_id"
+                      value={formData.office_id}
+                      onChange={handleInputChange}
+                      className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    >
+                      <option value="">{t('selectOffice')}</option>
+                      {offices.map(office => (
+                        <option key={office.id} value={office.id}>
+                          {office.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
             </CardBody>
             <CardFooter className="flex justify-end space-x-3">
               <Button
@@ -439,17 +473,20 @@ const StaffTab: React.FC = () => {
                   setShowForm(false);
                   setEditingStaff(null);
                   setFormData(initialFormData);
+                  setVerificationCode(null);
                 }}
               >
-                {t('cancel')}
+                {verificationCode ? 'Done' : t('cancel')}
               </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                isLoading={isSubmitting}
-              >
-                {editingStaff ? t('save') : t('addStaff')}
-              </Button>
+              {!verificationCode && (
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isLoading={isSubmitting}
+                >
+                  {editingStaff ? t('save') : t('addStaff')}
+                </Button>
+              )}
             </CardFooter>
           </form>
         </Card>
@@ -473,6 +510,7 @@ const StaffTab: React.FC = () => {
                   onClick={() => {
                     setFormData(initialFormData);
                     setEditingStaff(null);
+                    setVerificationCode(null);
                     setShowForm(true);
                   }}
                 >
