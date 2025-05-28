@@ -29,14 +29,12 @@ const AppLayout: React.FC = () => {
         const { data, error } = await supabase
           .from('logo_settings')
           .select('logo_url')
-          .limit(1)
-          .maybeSingle();
+          .single();
 
         if (error) throw error;
-        setLogoUrl(data?.logo_url || null);
+        setLogoUrl(data?.logo_url);
       } catch (err) {
         console.error('Error fetching logo:', err);
-        setLogoUrl(null);
       }
     };
 

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FileText, Users, CheckCircle, Clock, XCircle, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
 import StatusBadge from '../components/ui/StatusBadge';
+import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import Loader from '../components/ui/Loader';
-import { supabase } from '../lib/supabase';
 import { useTranslation } from '../lib/translations';
 
 interface DocumentCounts {
@@ -21,9 +21,6 @@ interface RecentDocument {
   created_at: string;
 }
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 2000; // 2 seconds
-
 const DashboardPage: React.FC = () => {
   const [documentCounts, setDocumentCounts] = useState<DocumentCounts>({
     total: 0,
@@ -34,97 +31,58 @@ const DashboardPage: React.FC = () => {
   const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([]);
   const [userCount, setUserCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const t = useTranslation();
 
-  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setIsLoading(true);
+      try {
+        // Get document counts using a single query
+        const { data: documents, error: countError } = await supabase
+          .from('documents')
+          .select('status');
 
-  const fetchWithRetry = async (fetchFn: () => Promise<any>, retries = MAX_RETRIES): Promise<any> => {
-    try {
-      return await fetchFn();
-    } catch (error) {
-      if (retries > 0) {
-        await delay(RETRY_DELAY);
-        return fetchWithRetry(fetchFn, retries - 1);
-      }
-      throw error;
-    }
-  };
+        if (countError) throw countError;
 
-  const fetchDashboardData = async () => {
-    setIsLoading(true);
-    setError(null);
+        const counts = documents?.reduce((acc, doc) => {
+          acc.total++;
+          acc[doc.status]++;
+          return acc;
+        }, { total: 0, pending: 0, approved: 0, rejected: 0 });
 
-    try {
-      // Get document counts using a single query
-      const { data: documents, error: countError } = await fetchWithRetry(() =>
-        supabase.from('documents').select('status')
-      );
-
-      if (countError) throw countError;
-
-      const counts = documents?.reduce((acc, doc) => {
-        acc.total++;
-        acc[doc.status]++;
-        return acc;
-      }, { total: 0, pending: 0, approved: 0, rejected: 0 });
-
-      // Get recent documents
-      const { data: recentDocs, error: recentError } = await fetchWithRetry(() =>
-        supabase
+        // Get recent documents
+        const { data: recentDocs, error: recentError } = await supabase
           .from('documents')
           .select('id, title, status, created_at')
           .order('created_at', { ascending: false })
-          .limit(5)
-      );
+          .limit(5);
 
-      if (recentError) throw recentError;
-      
-      // Get user count from profiles table
-      const { count: userCountData, error: userError } = await fetchWithRetry(() =>
-        supabase
+        if (recentError) throw recentError;
+        
+        // Get user count
+        const { count: userCountData, error: userError } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact', head: true })
-      );
+          .select('*', { count: 'exact', head: true });
 
-      if (userError) throw userError;
-      
-      setDocumentCounts(counts || { total: 0, pending: 0, approved: 0, rejected: 0 });
-      setRecentDocuments(recentDocs || []);
-      setUserCount(userCountData || 0);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      setError('Failed to load dashboard data. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        if (userError) throw userError;
+        
+        setDocumentCounts(counts || { total: 0, pending: 0, approved: 0, rejected: 0 });
+        setRecentDocuments(recentDocs || []);
+        setUserCount(userCountData || 0);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  useEffect(() => {
     fetchDashboardData();
   }, []);
 
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center py-20">
-        <Loader size="lg\" text="Loading dashboard data..." />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center py-20">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => fetchDashboardData()}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Retry
-          </button>
-        </div>
+        <Loader size="lg" text="Loading dashboard data..." />
       </div>
     );
   }

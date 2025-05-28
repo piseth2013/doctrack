@@ -25,7 +25,6 @@ const SettingsPage: React.FC = () => {
       const { data, error } = await supabase
         .from('logo_settings')
         .select('logo_url')
-        .eq('id', '00000000-0000-0000-0000-000000000000')
         .single();
 
       if (error) throw error;
@@ -85,6 +84,14 @@ const SettingsPage: React.FC = () => {
         .from('logoUpload')
         .getPublicUrl(fileName);
 
+      // Get logo settings record
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('logo_settings')
+        .select('id')
+        .single();
+
+      if (settingsError) throw settingsError;
+
       // Update logo settings
       const { error: updateError } = await supabase
         .from('logo_settings')
@@ -92,7 +99,7 @@ const SettingsPage: React.FC = () => {
           logo_url: publicUrl,
           updated_at: new Date().toISOString()
         })
-        .eq('id', '00000000-0000-0000-0000-000000000000');
+        .eq('id', settingsData.id);
 
       if (updateError) throw updateError;
 
@@ -232,4 +239,4 @@ const SettingsPage: React.FC = () => {
   );
 };
 
-export default SettingsPage
+export default SettingsPage;
