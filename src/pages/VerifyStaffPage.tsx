@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { FileLock, Mail, Lock, KeyRound } from 'lucide-react';
-import Input from './components/ui/Input';
-import Button from './components/ui/Button';
-import { Card, CardBody } from './components/ui/Card';
-import { supabase } from './lib/supabase';
-import { useAuth } from './components/auth/AuthWrapper';
-import { useTranslation } from './lib/translations';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
+import { Card, CardBody } from '../components/ui/Card';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../components/auth/AuthWrapper';
+import { useTranslation } from '../lib/translations';
 
 const VerifyStaffPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -78,7 +78,7 @@ const VerifyStaffPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
