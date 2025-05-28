@@ -51,20 +51,11 @@ const UsersPage: React.FC = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error fetching user role:', error);
-          return;
-        }
-
-        setCurrentUserRole(data?.role || null);
+        const { data: claims } = await supabase.auth.getSession();
+        const role = claims.session?.user.user_metadata?.role || 'user';
+        setCurrentUserRole(role);
       } catch (error) {
-        console.error('Error in fetchCurrentUserRole:', error);
+        console.error('Error fetching user role:', error);
       }
     };
 
@@ -436,5 +427,3 @@ const UsersPage: React.FC = () => {
     </div>
   );
 };
-
-export default UsersPage;
