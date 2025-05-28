@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FileText, Users, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
 import StatusBadge from '../components/ui/StatusBadge';
 import { supabase } from '../lib/supabase';
@@ -31,46 +31,60 @@ const DashboardPage: React.FC = () => {
   const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([]);
   const [userCount, setUserCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const t = useTranslation();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
+      setError(null);
+      
       try {
-        // Get document counts using a single query
-        const { data: documents, error: countError } = await supabase
+        // Get document counts using a more efficient query with count
+        const { data: countData, error: countError } = await supabase
           .from('documents')
-          .select('status');
+          .select('status', { count: 'exact' });
 
-        if (countError) throw countError;
+        if (countError) {
+          console.error('Error fetching document counts:', countError);
+          throw new Error('Failed to fetch document counts');
+        }
 
-        const counts = documents?.reduce((acc, doc) => {
-          acc.total++;
-          acc[doc.status]++;
-          return acc;
-        }, { total: 0, pending: 0, approved: 0, rejected: 0 });
+        const counts = {
+          total: countData?.length || 0,
+          pending: countData?.filter(doc => doc.status === 'pending').length || 0,
+          approved: countData?.filter(doc => doc.status === 'approved').length || 0,
+          rejected: countData?.filter(doc => doc.status === 'rejected').length || 0,
+        };
 
-        // Get recent documents
+        // Get recent documents with pagination
         const { data: recentDocs, error: recentError } = await supabase
           .from('documents')
           .select('id, title, status, created_at')
           .order('created_at', { ascending: false })
           .limit(5);
 
-        if (recentError) throw recentError;
-        
-        // Get user count
+        if (recentError) {
+          console.error('Error fetching recent documents:', recentError);
+          throw new Error('Failed to fetch recent documents');
+        }
+
+        // Get user count with optimized query
         const { count: userCountData, error: userError } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact', head: true });
+          .select('id', { count: 'exact', head: true });
 
-        if (userError) throw userError;
-        
-        setDocumentCounts(counts || { total: 0, pending: 0, approved: 0, rejected: 0 });
+        if (userError) {
+          console.error('Error fetching user count:', userError);
+          throw new Error('Failed to fetch user count');
+        }
+
+        setDocumentCounts(counts);
         setRecentDocuments(recentDocs || []);
         setUserCount(userCountData || 0);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setError(error instanceof Error ? error.message : 'An unexpected error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -83,6 +97,24 @@ const DashboardPage: React.FC = () => {
     return (
       <div className="h-full flex items-center justify-center py-20">
         <Loader size="lg" text="Loading dashboard data..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center py-20 px-4 text-center">
+        <div className="w-12 h-12 rounded-full bg-error-100 flex items-center justify-center text-error-600 mb-4">
+          <AlertCircle size={24} />
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Dashboard</h2>
+        <p className="text-gray-600 mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
