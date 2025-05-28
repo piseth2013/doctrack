@@ -59,7 +59,30 @@ const StaffTab: React.FC = () => {
   const [editingStaff, setEditingStaff] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [verificationCode, setVerificationCode] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const t = useTranslation();
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (userError) throw userError;
+      setIsAdmin(userData?.role === 'admin');
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
 
   const fetchStaff = async () => {
     setIsLoading(true);
@@ -115,6 +138,10 @@ const StaffTab: React.FC = () => {
   };
 
   const handleEdit = (person: Staff) => {
+    if (!isAdmin) {
+      setError('You must be an admin to edit staff members');
+      return;
+    }
     setFormData({
       name: person.name,
       email: person.email || '',
@@ -126,6 +153,11 @@ const StaffTab: React.FC = () => {
   };
 
   const handleDelete = async (staffId: string) => {
+    if (!isAdmin) {
+      setError('You must be an admin to delete staff members');
+      return;
+    }
+
     if (!confirm(t('confirmDelete').replace('{item}', 'staff member'))) {
       return;
     }
@@ -146,6 +178,12 @@ const StaffTab: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isAdmin) {
+      setError('You must be an admin to manage staff members');
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
     setVerificationCode(null);
@@ -246,6 +284,7 @@ const StaffTab: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleEdit(person)}
+                  disabled={!isAdmin}
                 >
                   {t('edit')}
                 </Button>
@@ -253,6 +292,7 @@ const StaffTab: React.FC = () => {
                   variant="danger"
                   size="sm"
                   onClick={() => handleDelete(person.id)}
+                  disabled={!isAdmin}
                 >
                   {t('delete')}
                 </Button>
@@ -292,6 +332,7 @@ const StaffTab: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => handleEdit(person)}
+              disabled={!isAdmin}
             >
               {t('edit')}
             </Button>
@@ -299,6 +340,7 @@ const StaffTab: React.FC = () => {
               variant="danger"
               size="sm"
               onClick={() => handleDelete(person.id)}
+              disabled={!isAdmin}
             >
               {t('delete')}
             </Button>
@@ -359,11 +401,16 @@ const StaffTab: React.FC = () => {
           variant="primary"
           leftIcon={<Plus size={16} />}
           onClick={() => {
+            if (!isAdmin) {
+              setError('You must be an admin to add staff members');
+              return;
+            }
             setFormData(initialFormData);
             setEditingStaff(null);
             setVerificationCode(null);
             setShowForm(true);
           }}
+          disabled={!isAdmin}
         >
           {t('addStaff')}
         </Button>
@@ -502,20 +549,22 @@ const StaffTab: React.FC = () => {
               <p className="mt-1 text-sm text-gray-500">
                 {searchQuery ? 'Try adjusting your search' : 'Get started by adding a staff member'}
               </p>
-              <div className="mt-6">
-                <Button
-                  variant="primary"
-                  leftIcon={<Plus size={16} />}
-                  onClick={() => {
-                    setFormData(initialFormData);
-                    setEditingStaff(null);
-                    setVerificationCode(null);
-                    setShowForm(true);
-                  }}
-                >
-                  {t('addStaff')}
-                </Button>
-              </div>
+              {isAdmin && (
+                <div className="mt-6">
+                  <Button
+                    variant="primary"
+                    leftIcon={<Plus size={16} />}
+                    onClick={() => {
+                      setFormData(initialFormData);
+                      setEditingStaff(null);
+                      setVerificationCode(null);
+                      setShowForm(true);
+                    }}
+                  >
+                    {t('addStaff')}
+                  </Button>
+                </div>
+              )}
             </div>
           </CardBody>
         </Card>
