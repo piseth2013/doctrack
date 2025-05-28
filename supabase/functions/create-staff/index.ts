@@ -119,22 +119,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if profile exists
-    const { data: existingProfile } = await supabaseAdmin
-      .from('profiles')
-      .select('id')
-      .eq('email', email)
-      .single();
-
-    if (existingProfile) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'A user with this email already exists' 
-        }),
-        { headers: corsHeaders, status: 400 }
-      );
-    }
+    // Generate a random verification code
+    const verificationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24); // Code expires in 24 hours
 
     // Create staff record
     const { data: staff, error: staffError } = await supabaseAdmin
@@ -159,11 +147,40 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Create verification code
+    const { error: verificationError } = await supabaseAdmin
+      .from('verification_codes')
+      .insert({
+        email,
+        code: verificationCode,
+        expires_at: expiresAt.toISOString(),
+      });
+
+    if (verificationError) {
+      // Cleanup: delete staff record if verification code creation fails
+      await supabaseAdmin
+        .from('staff')
+        .delete()
+        .eq('id', staff.id);
+
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: 'Failed to create verification code',
+          details: verificationError.message
+        }),
+        { headers: corsHeaders, status: 500 }
+      );
+    }
+
+    // TODO: Send email with verification code
+    // For now, we'll return the code in the response for testing
     return new Response(
       JSON.stringify({ 
         success: true,
         message: 'Staff created successfully',
-        staff 
+        staff,
+        verificationCode, // Remove this in production and send via email instead
       }),
       { headers: corsHeaders, status: 200 }
     );
