@@ -87,55 +87,106 @@ Deno.serve(async (req) => {
       throw new Error('A staff member with this email already exists');
     }
 
-    // Generate a random verification code
-    const verificationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24); // Code expires in 24 hours
+    // Check if user already exists in auth.users
+    const { data: existingUser, error: existingUserError } = await supabaseAdmin.auth.admin.listUsers({
+      filter: {
+        email: email
+      }
+    });
 
-    // Create staff record
-    const { data: staff, error: staffError } = await supabaseAdmin
-      .from('staff')
-      .insert({
-        name,
-        email,
-        position_id: position_id || null,
-        office_id: office_id || null,
-      })
-      .select('*, positions(*), offices(*)')
-      .single();
-
-    if (staffError) {
-      throw new Error(`Failed to create staff member: ${staffError.message}`);
+    if (existingUserError) {
+      throw new Error('Error checking existing user');
     }
 
-    // Create verification code
-    const { error: verificationError } = await supabaseAdmin
-      .from('verification_codes')
-      .insert({
-        email,
-        code: verificationCode,
-        expires_at: expiresAt.toISOString(),
-      });
+    if (existingUser.users.length > 0) {
+      throw new Error('A user with this email already exists');
+    }
 
-    if (verificationError) {
-      // Cleanup: delete staff record if verification code creation fails
-      await supabaseAdmin
+    // Generate a random password for initial signup
+    const tempPassword = Math.random().toString(36).substring(2, 10);
+
+    // Create auth user
+    const { data: { user }, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: tempPassword,
+      email_confirm: true
+    });
+
+    if (createUserError || !user) {
+      throw new Error(`Failed to create user: ${createUserError?.message}`);
+    }
+
+    try {
+      // Create user profile
+      const { error: createProfileError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          id: user.id,
+          email: user.email,
+          full_name: name,
+          role: 'user',
+        });
+
+      if (createProfileError) {
+        // Cleanup: delete auth user if profile creation fails
+        await supabaseAdmin.auth.admin.deleteUser(user.id);
+        throw new Error(`Failed to create user profile: ${createProfileError.message}`);
+      }
+
+      // Create staff record
+      const { data: staff, error: staffError } = await supabaseAdmin
         .from('staff')
-        .delete()
-        .eq('id', staff.id);
+        .insert({
+          id: user.id, // Use the same ID as the auth user
+          name,
+          email,
+          position_id: position_id || null,
+          office_id: office_id || null,
+        })
+        .select('*, positions(*), offices(*)')
+        .single();
 
-      throw new Error(`Failed to create verification code: ${verificationError.message}`);
+      if (staffError) {
+        // Cleanup: delete auth user and profile if staff creation fails
+        await supabaseAdmin.auth.admin.deleteUser(user.id);
+        throw new Error(`Failed to create staff member: ${staffError.message}`);
+      }
+
+      // Generate a verification code
+      const verificationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24); // Code expires in 24 hours
+
+      // Create verification code
+      const { error: verificationError } = await supabaseAdmin
+        .from('verification_codes')
+        .insert({
+          email,
+          code: verificationCode,
+          expires_at: expiresAt.toISOString(),
+        });
+
+      if (verificationError) {
+        // Cleanup: delete auth user, profile, and staff if verification code creation fails
+        await supabaseAdmin.auth.admin.deleteUser(user.id);
+        throw new Error(`Failed to create verification code: ${verificationError.message}`);
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'Staff created successfully',
+          staff,
+          verificationCode, // Remove this in production and send via email instead
+        }),
+        { headers: corsHeaders, status: 200 }
+      );
+
+    } catch (error) {
+      // If any step fails, ensure we clean up the auth user
+      await supabaseAdmin.auth.admin.deleteUser(user.id);
+      throw error;
     }
-
-    return new Response(
-      JSON.stringify({ 
-        success: true,
-        message: 'Staff created successfully',
-        staff,
-        verificationCode, // Remove this in production and send via email instead
-      }),
-      { headers: corsHeaders, status: 200 }
-    );
 
   } catch (error) {
     console.error('Error in create-staff function:', error);
