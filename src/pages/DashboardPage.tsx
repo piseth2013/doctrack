@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { LayoutDashboard, FileText, Users, CheckCircle, Clock, XCircle, RefreshCw } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
 import StatusBadge from '../components/ui/StatusBadge';
-import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import Loader from '../components/ui/Loader';
+import { supabase } from '../lib/supabase';
 import { useTranslation } from '../lib/translations';
 
 interface DocumentCounts {
@@ -80,7 +80,7 @@ const DashboardPage: React.FC = () => {
 
       if (recentError) throw recentError;
       
-      // Get user count - Using 'profiles' table instead of 'users'
+      // Get user count from profiles table
       const { count: userCountData, error: userError } = await fetchWithRetry(() =>
         supabase
           .from('profiles')
@@ -107,7 +107,7 @@ const DashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center py-20">
-        <Loader size="lg\" text="Loading dashboard data..." />
+        <Loader size="lg" text="Loading dashboard data..." />
       </div>
     );
   }
