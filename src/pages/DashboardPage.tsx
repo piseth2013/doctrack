@@ -31,53 +31,80 @@ const DashboardPage: React.FC = () => {
   const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([]);
   const [userCount, setUserCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const t = useTranslation();
 
+  const fetchDashboardData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Get document counts using a single query
+      const { data: documents, error: countError } = await supabase
+        .from('documents')
+        .select('status');
+
+      if (countError) throw countError;
+
+      const counts = documents?.reduce((acc, doc) => {
+        acc.total++;
+        acc[doc.status]++;
+        return acc;
+      }, { total: 0, pending: 0, approved: 0, rejected: 0 });
+
+      // Get recent documents
+      const { data: recentDocs, error: recentError } = await supabase
+        .from('documents')
+        .select('id, title, status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (recentError) throw recentError;
+      
+      // Get user count
+      const { count: userCountData, error: userError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      if (userError) throw userError;
+      
+      setDocumentCounts(counts || { total: 0, pending: 0, approved: 0, rejected: 0 });
+      setRecentDocuments(recentDocs || []);
+      setUserCount(userCountData || 0);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setError('Failed to load dashboard data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      setIsLoading(true);
-      try {
-        // Get document counts using a single query
-        const { data: documents, error: countError } = await supabase
-          .from('documents')
-          .select('status');
-
-        if (countError) throw countError;
-
-        const counts = documents?.reduce((acc, doc) => {
-          acc.total++;
-          acc[doc.status]++;
-          return acc;
-        }, { total: 0, pending: 0, approved: 0, rejected: 0 });
-
-        // Get recent documents
-        const { data: recentDocs, error: recentError } = await supabase
-          .from('documents')
-          .select('id, title, status, created_at')
-          .order('created_at', { ascending: false })
-          .limit(5);
-
-        if (recentError) throw recentError;
-        
-        // Get user count
-        const { count: userCountData, error: userError } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-
-        if (userError) throw userError;
-        
-        setDocumentCounts(counts || { total: 0, pending: 0, approved: 0, rejected: 0 });
-        setRecentDocuments(recentDocs || []);
-        setUserCount(userCountData || 0);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchDashboardData();
   }, []);
+
+  if (error) {
+    return (
+      <Card>
+        <CardBody className="py-12">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-error-100">
+              <FileText className="h-6 w-6 text-error-600" />
+            </div>
+            <h3 className="mt-3 text-lg font-medium text-gray-900">{error}</h3>
+            <div className="mt-6">
+              <button
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                onClick={fetchDashboardData}
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+    );
+  }
 
   if (isLoading) {
     return (
