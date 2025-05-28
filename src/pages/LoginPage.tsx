@@ -12,9 +12,29 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const { user } = useAuth();
   const t = useTranslation();
-  const logoUrl = 'https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload/logo-1748244299857.png';
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('logo_settings')
+          .select('logo_url')
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+        setLogoUrl(data?.logo_url || null);
+      } catch (err) {
+        console.error('Error fetching logo:', err);
+        setLogoUrl(null);
+      }
+    };
+
+    fetchLogo();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +60,7 @@ const LoginPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/dashboard\" replace />;
   }
 
   return (

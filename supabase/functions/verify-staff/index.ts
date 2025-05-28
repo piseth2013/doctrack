@@ -4,7 +4,6 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json'
 };
 
 interface VerifyStaffPayload {
@@ -42,13 +41,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (verificationError || !verificationData) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'Invalid or expired verification code' 
-        }),
-        { headers: corsHeaders, status: 400 }
-      );
+      throw new Error('Invalid or expired verification code');
     }
 
     // Get staff record
@@ -59,13 +52,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (staffError || !staff) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'Staff record not found' 
-        }),
-        { headers: corsHeaders, status: 404 }
-      );
+      throw new Error('Staff record not found');
     }
 
     // Create auth user
@@ -76,13 +63,7 @@ Deno.serve(async (req) => {
     });
 
     if (createUserError || !user) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: createUserError?.message || 'Failed to create user' 
-        }),
-        { headers: corsHeaders, status: 500 }
-      );
+      throw new Error(createUserError?.message || 'Failed to create user');
     }
 
     // Create profile
@@ -98,13 +79,7 @@ Deno.serve(async (req) => {
     if (profileError) {
       // Cleanup: delete the auth user if profile creation fails
       await supabaseAdmin.auth.admin.deleteUser(user.id);
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: `Failed to create profile: ${profileError.message}` 
-        }),
-        { headers: corsHeaders, status: 500 }
-      );
+      throw new Error(`Failed to create profile: ${profileError.message}`);
     }
 
     // Delete verification code
@@ -115,7 +90,6 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        success: true,
         message: 'Staff verification successful',
         user: {
           id: user.id,
@@ -123,16 +97,21 @@ Deno.serve(async (req) => {
           name: staff.name,
         },
       }),
-      { headers: corsHeaders, status: 200 }
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      },
     );
 
   } catch (error) {
     return new Response(
       JSON.stringify({
-        success: false,
-        message: error instanceof Error ? error.message : 'An unexpected error occurred'
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
       }),
-      { headers: corsHeaders, status: 500 }
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      },
     );
   }
 });
