@@ -61,7 +61,7 @@ const DashboardPage: React.FC = () => {
         
         // Get user count
         const { count: userCountData, error: userError } = await supabase
-          .from('profiles')
+          .from('users')
           .select('*', { count: 'exact', head: true });
 
         if (userError) throw userError;
