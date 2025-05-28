@@ -27,13 +27,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'Missing environment variables' 
-        }),
-        { headers: corsHeaders, status: 500 }
-      );
+      throw new Error('Missing environment variables');
     }
 
     const supabaseAdmin = createClient(
@@ -49,26 +43,14 @@ Deno.serve(async (req) => {
     // Verify admin authorization
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'No authorization header' 
-        }),
-        { headers: corsHeaders, status: 401 }
-      );
+      throw new Error('No authorization header');
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user: caller }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !caller) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'Invalid token' 
-        }),
-        { headers: corsHeaders, status: 401 }
-      );
+      throw new Error('Invalid authentication token');
     }
 
     // Verify caller is admin
@@ -79,13 +61,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (profileError || !callerProfile || callerProfile.role !== 'admin') {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'Unauthorized - Admin access required' 
-        }),
-        { headers: corsHeaders, status: 403 }
-      );
+      throw new Error('Unauthorized - Admin access required');
     }
 
     // Get request payload
@@ -93,30 +69,22 @@ Deno.serve(async (req) => {
     const { name, email, position_id, office_id } = payload;
 
     if (!name || !email) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'Name and email are required' 
-        }),
-        { headers: corsHeaders, status: 400 }
-      );
+      throw new Error('Name and email are required');
     }
 
     // Check if staff member already exists
-    const { data: existingStaff } = await supabaseAdmin
+    const { data: existingStaff, error: existingStaffError } = await supabaseAdmin
       .from('staff')
       .select('id')
       .eq('email', email)
       .single();
 
+    if (existingStaffError && existingStaffError.code !== 'PGRST116') {
+      throw new Error('Error checking existing staff');
+    }
+
     if (existingStaff) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'A staff member with this email already exists' 
-        }),
-        { headers: corsHeaders, status: 400 }
-      );
+      throw new Error('A staff member with this email already exists');
     }
 
     // Generate a random verification code
@@ -137,14 +105,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (staffError) {
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'Failed to create staff member',
-          details: staffError.message
-        }),
-        { headers: corsHeaders, status: 500 }
-      );
+      throw new Error(`Failed to create staff member: ${staffError.message}`);
     }
 
     // Create verification code
@@ -163,18 +124,9 @@ Deno.serve(async (req) => {
         .delete()
         .eq('id', staff.id);
 
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          message: 'Failed to create verification code',
-          details: verificationError.message
-        }),
-        { headers: corsHeaders, status: 500 }
-      );
+      throw new Error(`Failed to create verification code: ${verificationError.message}`);
     }
 
-    // TODO: Send email with verification code
-    // For now, we'll return the code in the response for testing
     return new Response(
       JSON.stringify({ 
         success: true,
@@ -187,12 +139,20 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error in create-staff function:', error);
+    
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = errorMessage.includes('Unauthorized') ? 403 
+      : errorMessage.includes('Invalid authentication token') ? 401
+      : errorMessage.includes('already exists') ? 409
+      : errorMessage.includes('required') ? 400
+      : 500;
+
     return new Response(
       JSON.stringify({
         success: false,
-        message: error instanceof Error ? error.message : 'An unexpected error occurred'
+        message: errorMessage
       }),
-      { headers: corsHeaders, status: 500 }
+      { headers: corsHeaders, status }
     );
   }
 });

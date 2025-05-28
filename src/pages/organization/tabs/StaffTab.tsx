@@ -194,7 +194,6 @@ const StaffTab: React.FC = () => {
           throw new Error(result.message || 'Failed to create staff member');
         }
 
-        // Store verification code to show to the user
         if (result.verificationCode) {
           setVerificationCode(result.verificationCode);
         }
