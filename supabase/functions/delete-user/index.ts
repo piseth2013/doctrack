@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
 
     // Verify caller is an admin
     const { data: callerProfile, error: profileError } = await supabaseAdmin
-      .from('profiles')
+      .from('users')
       .select('role')
       .eq('id', caller.id)
       .single();
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
 
     // Verify target user exists and is not an admin
     const { data: targetUser, error: targetUserError } = await supabaseAdmin
-      .from('profiles')
+      .from('users')
       .select('role')
       .eq('id', userId)
       .single();

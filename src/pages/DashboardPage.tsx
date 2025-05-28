@@ -59,9 +59,9 @@ const DashboardPage: React.FC = () => {
 
         if (recentError) throw recentError;
         
-        // Get user count - Changed from 'users' to 'profiles'
+        // Get user count - Changed from 'profiles' to 'users'
         const { count: userCountData, error: userError } = await supabase
-          .from('profiles')
+          .from('users')
           .select('*', { count: 'exact', head: true });
 
         if (userError) throw userError;
@@ -82,7 +82,7 @@ const DashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center py-20">
-        <Loader size="lg\" text="Loading dashboard data..." />
+        <Loader size="lg" text="Loading dashboard data..." />
       </div>
     );
   }
