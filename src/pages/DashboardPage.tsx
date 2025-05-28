@@ -62,22 +62,21 @@ const DashboardPage: React.FC = () => {
         if (recentError) throw recentError;
 
         // Get user count from users table with proper error handling
-        const { count: userCountResult, error: userCountError } = await supabase
+        const { data: users, error: userCountError } = await supabase
           .from('users')
-          .select('*', { count: 'exact', head: true });
+          .select('id', { count: 'exact' })
+          .eq('role', 'user');
 
         if (userCountError) {
           console.error('Error fetching user count:', userCountError);
-          // Don't throw error, just set count to 0 and continue
-          setUserCount(0);
-        } else {
-          setUserCount(userCountResult || 0);
+          throw userCountError;
         }
 
         setDocumentCounts(counts || { total: 0, pending: 0, approved: 0, rejected: 0 });
         setRecentDocuments(recentDocs || []);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        setUserCount(users?.length || 0);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
         setError('Failed to load dashboard data. Please try again later.');
       } finally {
         setIsLoading(false);
@@ -90,7 +89,7 @@ const DashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center py-20">
-        <Loader size="lg\" text="Loading dashboard data..." />
+        <Loader size="lg" text="Loading dashboard data..." />
       </div>
     );
   }
