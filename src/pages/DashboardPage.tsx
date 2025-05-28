@@ -89,7 +89,7 @@ const DashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center py-20">
-        <Loader size="lg" text="Loading dashboard data..." />
+        <Loader size="lg\" text="Loading dashboard data..." />
       </div>
     );
   }
