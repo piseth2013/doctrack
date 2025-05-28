@@ -72,22 +72,7 @@ Deno.serve(async (req) => {
       throw new Error('Name and email are required');
     }
 
-    // Check if staff member already exists
-    const { data: existingStaff, error: existingStaffError } = await supabaseAdmin
-      .from('staff')
-      .select('id')
-      .eq('email', email)
-      .single();
-
-    if (existingStaffError && existingStaffError.code !== 'PGRST116') {
-      throw new Error('Error checking existing staff');
-    }
-
-    if (existingStaff) {
-      throw new Error('A staff member with this email already exists');
-    }
-
-    // Check if user already exists in auth.users
+    // Check if user exists in auth.users
     const { data: existingUser, error: existingUserError } = await supabaseAdmin.auth.admin.listUsers({
       filter: {
         email: email
