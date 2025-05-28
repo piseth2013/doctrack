@@ -60,20 +60,20 @@ const DashboardPage: React.FC = () => {
           .limit(5);
 
         if (recentError) throw recentError;
-        
-        // Get user count from staff table instead of users table
-        // This avoids the infinite recursion issue since staff table has simpler policies
-        const { count: staffCount, error: staffError } = await supabase
-          .from('staff')
+
+        // Get user count from users table with proper error handling
+        const { count: userCountResult, error: userCountError } = await supabase
+          .from('users')
           .select('*', { count: 'exact', head: true });
 
-        if (staffError) {
-          console.error('Error fetching staff count:', staffError);
+        if (userCountError) {
+          console.error('Error fetching user count:', userCountError);
+          // Don't throw error, just set count to 0 and continue
           setUserCount(0);
         } else {
-          setUserCount(staffCount || 0);
+          setUserCount(userCountResult || 0);
         }
-        
+
         setDocumentCounts(counts || { total: 0, pending: 0, approved: 0, rejected: 0 });
         setRecentDocuments(recentDocs || []);
       } catch (error) {
@@ -90,7 +90,7 @@ const DashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center py-20">
-        <Loader size="lg\" text="Loading dashboard data..." />
+        <Loader size="lg" text="Loading dashboard data..." />
       </div>
     );
   }
