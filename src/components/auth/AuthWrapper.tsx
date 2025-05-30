@@ -35,6 +35,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(user);
       } catch (error) {
         console.error('Error fetching user:', error);
+        // Clear any stale session data on error
+        await supabase.auth.signOut();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -45,8 +48,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         setUser(session.user);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
+      } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        if (!session?.user) {
+          setUser(null);
+        }
       }
     });
 
@@ -61,8 +66,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const refreshUser = async () => {
-    const { user } = await getCurrentUser();
-    setUser(user);
+    try {
+      const { user } = await getCurrentUser();
+      setUser(user);
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+      await handleSignOut();
+    }
   };
 
   const value = {
