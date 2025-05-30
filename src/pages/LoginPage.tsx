@@ -16,36 +16,28 @@ const LoginPage: React.FC = () => {
   const { user } = useAuth();
   const t = useTranslation();
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('logo_settings')
-          .select('logo_url')
-          .maybeSingle();
+useEffect(() => {
+  const fetchLogo = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('logo_settings')
+        .select('logo_url')
+        .maybeSingle();
 
-        if (error) throw error;
-        if (data?.logo_url) {
-          // Get the file name from the full URL
-          const fileName = data.logo_url.split('/').pop();
-          if (fileName) {
-            // Create a new signed URL for the file
-            const { data: { signedUrl } } = await supabase.storage
-              .from('logoUpload')
-              .createSignedUrl(fileName, 60 * 60); // 1 hour expiry
-
-            if (signedUrl) {
-              setLogoUrl(signedUrl);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching logo:', err);
+      if (error) throw error;
+      if (data?.logo_url) {
+        // Construct public URL directly
+        const publicUrl = `https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload/${data.logo_url}`;
+        setLogoUrl(publicUrl);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching logo:', err);
+    }
+  };
 
-    fetchLogo();
-  }, []);
+  fetchLogo();
+}, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
