@@ -30,12 +30,12 @@ const LoginPage: React.FC = () => {
           const fileName = data.logo_url.split('/').pop();
           if (fileName) {
             // Create a new signed URL for the file
-            const { data: { signedUrl } } = await supabase.storage
-              .from('logoUpload')
-              .createSignedUrl(fileName, 60 * 60); // 1 hour expiry
+            // const { data: { signedUrl } } = await supabase.storage
+            //   .from('logoUpload')
+            //   .createSignedUrl(fileName, 60 * 60); // 1 hour expiry
 
             if (signedUrl) {
-              setLogoUrl("logo-1748445368677.png");
+              setLogoUrl(signedUrl);
             }
           }
         }
@@ -47,6 +47,7 @@ const LoginPage: React.FC = () => {
     fetchLogo();
   }, []);
 
+  setLogoUrl("https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload/logo-1748445368677.png")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
