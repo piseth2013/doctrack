@@ -22,23 +22,10 @@ const LoginPage: React.FC = () => {
         const { data, error } = await supabase
           .from('logo_settings')
           .select('logo_url')
-          .maybeSingle();
+          .single();
 
         if (error) throw error;
-        if (data?.logo_url) {
-          // Get the file name from the full URL
-          const fileName = data.logo_url.split('/').pop();
-          if (fileName) {
-            // Create a new signed URL for the file
-            const { data: { signedUrl } } = await supabase.storage
-              .from('logoUpload')
-              .createSignedUrl(fileName, 60 * 60); // 1 hour expiry
-
-            if (signedUrl) {
-              setLogoUrl(signedUrl);
-            }
-          }
-        }
+        setLogoUrl(data?.logo_url);
       } catch (err) {
         console.error('Error fetching logo:', err);
       }
@@ -71,15 +58,15 @@ const LoginPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center">
           {logoUrl ? (
-            <div className="w-[512px] h-[512px] max-w-[200px] max-h-[200px] flex items-center justify-center">
+            <div className="w-32 h-32 flex items-center justify-center">
               <img 
                 src={logoUrl} 
                 alt="Company Logo" 
@@ -171,3 +158,5 @@ const LoginPage: React.FC = () => {
     </div>
   );
 };
+
+export default LoginPage;
