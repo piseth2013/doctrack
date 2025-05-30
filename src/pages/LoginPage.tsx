@@ -16,23 +16,30 @@ const LoginPage: React.FC = () => {
   const { user } = useAuth();
   const t = useTranslation();
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('logo_settings')
-          .select('logo_url')
-          .single();
+useEffect(() => {
+  const fetchLogo = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('logo_settings')
+        .select('logo_url')
+        .maybeSingle();
 
-        if (error) throw error;
-        setLogoUrl(data?.logo_url);
-      } catch (err) {
-        console.error('Error fetching logo:', err);
+      if (error) throw error;
+      if (data?.logo_url) {
+        const { data: urlData } = supabase.storage
+          .from('logoUpload')
+          .getPublicUrl("https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload//logo-1748445368677.png"); // this must be the correct path in the bucket
+
+        setLogoUrl(urlData.publicUrl);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching logo:', err);
+    }
+  };
 
-    fetchLogo();
-  }, []);
+  fetchLogo();
+}, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,9 +71,9 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-6">
           {logoUrl ? (
-            <div className="w-32 h-32 flex items-center justify-center">
+            <div className="w-[512px] h-[512px] max-w-[200px] max-h-[200px] flex items-center justify-center">
               <img 
                 src={logoUrl} 
                 alt="Company Logo" 
@@ -137,7 +144,21 @@ const LoginPage: React.FC = () => {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-            
+                <span className="px-2 bg-white text-gray-500">
+                  {('demoCredentials')}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-3">
+              <div className="text-sm text-center text-gray-600">
+                <p>Email: demo.admin@doctrack.com</p>
+                <p>Password: Demo123!</p>
+                <p className="mt-2 text-xs">
+                  These credentials will log you in as an admin user with full access to the system.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
