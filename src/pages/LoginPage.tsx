@@ -47,7 +47,7 @@ const LoginPage: React.FC = () => {
     fetchLogo();
   }, []);
 
-  
+  const logoUrl = "https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload/logo-1748445368677.png"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,10 +80,10 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
-          { (
+          {logoUrl ? (
             <div className="w-[512px] h-[512px] max-w-[200px] max-h-[200px] flex items-center justify-center">
               <img 
-                src={"https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload/logo-1748445368677.png"} 
+                src={logoUrl} 
                 alt="Company Logo" 
                 className="max-w-full max-h-full object-contain"
               />
