@@ -47,7 +47,6 @@ const LoginPage: React.FC = () => {
     fetchLogo();
   }, []);
 
-  setLogoUrl("https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload/logo-1748445368677.png")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
