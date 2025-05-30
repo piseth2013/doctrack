@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
-import { Users, Settings as SettingsIcon, Upload, Plus, Search, X } from 'lucide-react';
+import { Users, Settings as SettingsIcon, Upload, Briefcase, Plus, Search, X } from 'lucide-react';
 import { useTranslation } from '../lib/translations';
 import UsersPage from './UsersPage';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { supabase } from '../lib/supabase';
 
-type SettingsSection = 'users' | 'general';
+type SettingsSection = 'users' | 'positions' | 'general';
 
 interface Position {
   id: string;
@@ -39,6 +39,7 @@ const SettingsPage: React.FC = () => {
   const [editingPositionId, setEditingPositionId] = useState<string | null>(null);
   const [isSubmittingPosition, setIsSubmittingPosition] = useState(false);
   const [positionError, setPositionError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchLogo();
@@ -216,11 +217,21 @@ const SettingsPage: React.FC = () => {
     }
   };
 
+  const filteredPositions = positions.filter(position =>
+    position.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (position.description && position.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   const menuItems = [
     {
       id: 'users',
       label: t('users'),
       icon: <Users size={20} />,
+    },
+    {
+      id: 'positions',
+      label: t('positions'),
+      icon: <Briefcase size={20} />,
     },
     {
       id: 'general',
@@ -270,63 +281,11 @@ const SettingsPage: React.FC = () => {
             </Card>
           )}
 
-          {activeSection === 'general' && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <h2 className="text-lg font-medium text-gray-900">{t('general')}</h2>
-                </CardHeader>
-                <CardBody>
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-base font-medium text-gray-900 mb-4">Logo</h3>
-                      <div className="flex items-center space-x-4">
-                        <div className="w-16 h-16 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
-                          {logoUrl ? (
-                            <img 
-                              src={logoUrl} 
-                              alt="Logo" 
-                              className="max-w-full max-h-full object-contain"
-                            />
-                          ) : (
-                            <Upload size={24} className="text-gray-400" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="relative">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleLogoUpload}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              disabled={isUploading}
-                            />
-                            <Button
-                              variant="outline"
-                              leftIcon={<Upload size={16} />}
-                              disabled={isUploading}
-                            >
-                              {isUploading ? 'Uploading...' : 'Upload Logo'}
-                            </Button>
-                          </div>
-                          <p className="mt-2 text-sm text-gray-500">
-                            Recommended size: 512x512px. Max file size: 2MB.
-                          </p>
-                          {error && (
-                            <p className="mt-2 text-sm text-error-600">
-                              {error}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardBody>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex items-center justify-between">
-                  <h2 className="text-lg font-medium text-gray-900">Positions</h2>
+          {activeSection === 'positions' && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-medium text-gray-900">{t('positions')}</h2>
                   <Button
                     variant="primary"
                     size="sm"
@@ -337,133 +296,218 @@ const SettingsPage: React.FC = () => {
                       setShowPositionForm(true);
                     }}
                   >
-                    Add Position
+                    {t('addPosition')}
                   </Button>
-                </CardHeader>
-                <CardBody>
-                  {positionError && (
-                    <div className="mb-4 p-4 text-sm text-error-700 bg-error-50 rounded-md">
-                      {positionError}
-                    </div>
-                  )}
+                </div>
+              </CardHeader>
+              <CardBody>
+                {positionError && (
+                  <div className="mb-4 p-4 text-sm text-error-700 bg-error-50 rounded-md">
+                    {positionError}
+                  </div>
+                )}
 
-                  {showPositionForm && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                      <form onSubmit={handlePositionSubmit}>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-medium">
-                              {editingPositionId ? 'Edit Position' : 'Add Position'}
-                            </h3>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setShowPositionForm(false);
-                                setEditingPositionId(null);
-                                setPositionFormData(initialPositionForm);
-                              }}
-                            >
-                              <X size={18} />
-                            </Button>
-                          </div>
+                <div className="mb-4">
+                  <Input
+                    placeholder={t('searchPlaceholder').replace('{item}', 'positions')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    leftIcon={<Search size={18} />}
+                  />
+                </div>
 
-                          <Input
-                            label="Position Name"
-                            name="name"
-                            value={positionFormData.name}
+                {showPositionForm && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <form onSubmit={handlePositionSubmit}>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-lg font-medium">
+                            {editingPositionId ? t('editPosition') : t('addPosition')}
+                          </h3>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowPositionForm(false);
+                              setEditingPositionId(null);
+                              setPositionFormData(initialPositionForm);
+                            }}
+                          >
+                            <X size={18} />
+                          </Button>
+                        </div>
+
+                        <Input
+                          label={t('positionName')}
+                          name="name"
+                          value={positionFormData.name}
+                          onChange={(e) => setPositionFormData(prev => ({
+                            ...prev,
+                            name: e.target.value
+                          }))}
+                          required
+                        />
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {t('positionDescription')}
+                          </label>
+                          <textarea
+                            name="description"
+                            rows={3}
+                            value={positionFormData.description}
                             onChange={(e) => setPositionFormData(prev => ({
                               ...prev,
-                              name: e.target.value
+                              description: e.target.value
                             }))}
-                            required
+                            className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                           />
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Description
-                            </label>
-                            <textarea
-                              name="description"
-                              rows={3}
-                              value={positionFormData.description}
-                              onChange={(e) => setPositionFormData(prev => ({
-                                ...prev,
-                                description: e.target.value
-                              }))}
-                              className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                            />
-                          </div>
-
-                          <div className="flex justify-end space-x-3">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => {
-                                setShowPositionForm(false);
-                                setEditingPositionId(null);
-                                setPositionFormData(initialPositionForm);
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              type="submit"
-                              variant="primary"
-                              isLoading={isSubmittingPosition}
-                            >
-                              {editingPositionId ? 'Save Changes' : 'Add Position'}
-                            </Button>
-                          </div>
                         </div>
-                      </form>
-                    </div>
-                  )}
 
-                  <div className="divide-y divide-gray-200">
-                    {positions.map((position) => (
-                      <div
-                        key={position.id}
-                        className="py-4 flex items-center justify-between"
-                      >
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-900">
-                            {position.name}
-                          </h3>
-                          {position.description && (
-                            <p className="mt-1 text-sm text-gray-500">
-                              {position.description}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex space-x-2">
+                        <div className="flex justify-end space-x-3">
                           <Button
+                            type="button"
                             variant="outline"
-                            size="sm"
-                            onClick={() => handleEditPosition(position)}
+                            onClick={() => {
+                              setShowPositionForm(false);
+                              setEditingPositionId(null);
+                              setPositionFormData(initialPositionForm);
+                            }}
                           >
-                            Edit
+                            {t('cancel')}
                           </Button>
                           <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeletePosition(position.id)}
+                            type="submit"
+                            variant="primary"
+                            isLoading={isSubmittingPosition}
                           >
-                            Delete
+                            {editingPositionId ? t('save') : t('addPosition')}
                           </Button>
                         </div>
                       </div>
-                    ))}
-
-                    {positions.length === 0 && (
-                      <p className="py-4 text-center text-gray-500">
-                        No positions found. Add your first position.
-                      </p>
-                    )}
+                    </form>
                   </div>
-                </CardBody>
-              </Card>
-            </div>
+                )}
+
+                <div className="divide-y divide-gray-200">
+                  {filteredPositions.map((position) => (
+                    <div
+                      key={position.id}
+                      className="py-4 flex items-center justify-between"
+                    >
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          {position.name}
+                        </h3>
+                        {position.description && (
+                          <p className="mt-1 text-sm text-gray-500">
+                            {position.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditPosition(position)}
+                        >
+                          {t('edit')}
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleDeletePosition(position.id)}
+                        >
+                          {t('delete')}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {filteredPositions.length === 0 && (
+                    <div className="py-12 text-center">
+                      <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
+                      <h3 className="mt-2 text-lg font-medium text-gray-900">
+                        {t('noPositionsFound')}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {searchQuery ? 'Try adjusting your search' : 'Get started by adding a position'}
+                      </p>
+                      <div className="mt-6">
+                        <Button
+                          variant="primary"
+                          leftIcon={<Plus size={16} />}
+                          onClick={() => {
+                            setPositionFormData(initialPositionForm);
+                            setEditingPositionId(null);
+                            setShowPositionForm(true);
+                          }}
+                        >
+                          {t('addPosition')}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
+          )}
+
+          {activeSection === 'general' && (
+            <Card>
+              <CardHeader>
+                <h2 className="text-lg font-medium text-gray-900">{t('general')}</h2>
+              </CardHeader>
+              <CardBody>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 mb-4">Logo</h3>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-16 h-16 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
+                        {logoUrl ? (
+                          <img 
+                            src={logoUrl} 
+                            alt="Logo" 
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        ) : (
+                          <Upload size={24} className="text-gray-400" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            disabled={isUploading}
+                          />
+                          <Button
+                            variant="outline"
+                            leftIcon={<Upload size={16} />}
+                            disabled={isUploading}
+                          >
+                            {isUploading ? 'Uploading...' : 'Upload Logo'}
+                          </Button>
+                        </div>
+                        <p className="mt-2 text-sm text-gray-500">
+                          Recommended size: 512x512px. Max file size: 2MB.
+                        </p>
+                        {error && (
+                          <p className="mt-2 text-sm text-error-600">
+                            {error}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-200 pt-6">
+                    <p className="text-gray-500">{t('comingSoon')}</p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
           )}
         </div>
       </div>
