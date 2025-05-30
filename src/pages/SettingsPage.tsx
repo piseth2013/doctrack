@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardBody, CardHeader } from '../components/ui/Card';
-import { Users, Settings as SettingsIcon, Building2, Upload } from 'lucide-react';
+import { Users, Settings as SettingsIcon, Upload } from 'lucide-react';
 import { useTranslation } from '../lib/translations';
 import UsersPage from './UsersPage';
-import OrganizationPage from './organization/OrganizationPage';
 import Button from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
 
-type SettingsSection = 'users' | 'general' | 'organization';
+type SettingsSection = 'users' | 'general';
 
 const SettingsPage: React.FC = () => {
   const t = useTranslation();
@@ -121,11 +120,6 @@ const SettingsPage: React.FC = () => {
       icon: <Users size={20} />,
     },
     {
-      id: 'organization',
-      label: t('organization'),
-      icon: <Building2 size={20} />,
-    },
-    {
       id: 'general',
       label: t('general'),
       icon: <SettingsIcon size={20} />,
@@ -171,10 +165,6 @@ const SettingsPage: React.FC = () => {
                 <UsersPage />
               </CardBody>
             </Card>
-          )}
-
-          {activeSection === 'organization' && (
-            <OrganizationPage />
           )}
 
           {activeSection === 'general' && (

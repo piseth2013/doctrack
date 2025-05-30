@@ -122,77 +122,20 @@ export interface Database {
           updated_at?: string
         }
       }
-      staff: {
+      logo_settings: {
         Row: {
           id: string
-          name: string
-          email: string | null
-          position_id: string | null
-          office_id: string | null
-          created_at: string
+          logo_url: string | null
           updated_at: string
         }
         Insert: {
           id?: string
-          name: string
-          email?: string | null
-          position_id?: string | null
-          office_id?: string | null
-          created_at?: string
+          logo_url?: string | null
           updated_at?: string
         }
         Update: {
           id?: string
-          name?: string
-          email?: string | null
-          position_id?: string | null
-          office_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "staff_position_id_fkey"
-            columns: ["position_id"]
-            isOneToOne: false
-            referencedRelation: "positions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "staff_office_id_fkey"
-            columns: ["office_id"]
-            isOneToOne: false
-            referencedRelation: "offices"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      offices: {
-        Row: {
-          id: string
-          name: string
-          location: string | null
-          phone: string | null
-          email: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          location?: string | null
-          phone?: string | null
-          email?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          location?: string | null
-          phone?: string | null
-          email?: string | null
-          created_at?: string
+          logo_url?: string | null
           updated_at?: string
         }
       }
