@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
               .from('logoUpload')
               .createSignedUrl(fileName, 60 * 60); // 1 hour expiry
 
-            console.log(signedUrl).
+            console.log(signedUrl);
 
             if (signedUrl) {
               setLogoUrl(signedUrl);
