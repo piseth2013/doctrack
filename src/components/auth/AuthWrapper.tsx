@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader size="lg" text="Loading authentication..." />
+        <Loader size="lg\" text="Loading authentication..." />
       </div>
     );
   }
@@ -103,7 +103,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader size="lg" text="Loading authentication..." />
+        <Loader size="lg\" text="Loading authentication..." />
       </div>
     );
   }
