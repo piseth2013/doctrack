@@ -16,28 +16,29 @@ const LoginPage: React.FC = () => {
   const { user } = useAuth();
   const t = useTranslation();
 
-useEffect(() => {
-  const fetchLogo = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('logo_settings')
-        .select('logo_url')
-        .maybeSingle();
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('logo_settings')
+          .select('logo_url')
+          .maybeSingle();
 
-      if (error) throw error;
-      if (data?.logo_url) {
-        // Construct public URL directly
-        const publicUrl = `https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload/${data.logo_url}`;
-        setLogoUrl(publicUrl);
+        if (error) throw error;
+        if (data?.logo_url) {
+          // Get the public URL for the logo
+          const { data: { publicUrl } } = supabase.storage
+            .from('logoUpload')
+            .getPublicUrl(data.logo_url);
+          setLogoUrl(publicUrl);
+        }
+      } catch (err) {
+        console.error('Error fetching logo:', err);
       }
-    } catch (err) {
-      console.error('Error fetching logo:', err);
-    }
-  };
+    };
 
-  fetchLogo();
-}, []);
-
+    fetchLogo();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +64,7 @@ useEffect(() => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
