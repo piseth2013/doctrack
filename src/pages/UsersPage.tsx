@@ -14,6 +14,7 @@ interface User {
   full_name: string;
   role: 'admin' | 'user';
   department: string | null;
+  position: string | null;
   created_at: string;
 }
 
@@ -22,6 +23,7 @@ interface UserFormData {
   full_name: string;
   role: 'admin' | 'user';
   department: string;
+  position: string;
   password?: string;
 }
 
@@ -30,6 +32,7 @@ const initialFormData: UserFormData = {
   full_name: '',
   role: 'user',
   department: '',
+  position: '',
 };
 
 const UsersPage: React.FC = () => {
@@ -116,6 +119,7 @@ const UsersPage: React.FC = () => {
       full_name: userToEdit.full_name,
       role: userToEdit.role,
       department: userToEdit.department || '',
+      position: userToEdit.position || '',
     });
     setEditingUserId(userId);
     setShowForm(true);
@@ -175,6 +179,7 @@ const UsersPage: React.FC = () => {
             full_name: formData.full_name,
             role: formData.role,
             department: formData.department || null,
+            position: formData.position || null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', editingUserId);
@@ -213,7 +218,8 @@ const UsersPage: React.FC = () => {
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (user.department && user.department.toLowerCase().includes(searchQuery.toLowerCase()))
+    (user.department && user.department.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (user.position && user.position.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (currentUserRole !== 'admin') {
@@ -336,6 +342,14 @@ const UsersPage: React.FC = () => {
                 />
               </div>
 
+              <Input
+                label={t('position')}
+                name="position"
+                value={formData.position}
+                onChange={handleInputChange}
+                fullWidth
+              />
+
               {!editingUserId && (
                 <Input
                   label={t('password')}
@@ -397,6 +411,7 @@ const UsersPage: React.FC = () => {
                 fullName={user.full_name}
                 role={user.role}
                 department={user.department}
+                position={user.position}
                 createdAt={user.created_at}
                 onDelete={handleDeleteUser}
                 onEdit={handleEdit}
