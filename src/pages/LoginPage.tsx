@@ -16,28 +16,30 @@ const LoginPage: React.FC = () => {
   const { user } = useAuth();
   const t = useTranslation();
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('logo_settings')
-          .select('logo_url')
-          .maybeSingle();
+useEffect(() => {
+  const fetchLogo = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('logo_settings')
+        .select('logo_url')
+        .maybeSingle();
 
-        if (error) throw error;
-        if (data?.logo_url) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('logoUpload')
-            .getPublicUrl(data.logo_url.split('/').pop() || '');
-          setLogoUrl(publicUrl);
-        }
-      } catch (err) {
-        console.error('Error fetching logo:', err);
+      if (error) throw error;
+      if (data?.logo_url) {
+        const { data: urlData } = supabase.storage
+          .from('logoUpload')
+          .getPublicUrl(https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload//logo-1748445368677.png); // this must be the correct path in the bucket
+
+        setLogoUrl(urlData.publicUrl);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching logo:', err);
+    }
+  };
 
-    fetchLogo();
-  }, []);
+  fetchLogo();
+}, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
