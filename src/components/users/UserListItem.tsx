@@ -11,7 +11,6 @@ interface UserListItemProps {
   fullName: string;
   role: 'admin' | 'user';
   department: string | null;
-  position: string | null;
   createdAt: string;
   onDelete?: (userId: string) => void;
   onEdit?: (userId: string) => void;
@@ -24,7 +23,6 @@ const UserListItem: React.FC<UserListItemProps> = ({
   fullName,
   role,
   department,
-  position,
   createdAt,
   onDelete,
   onEdit,
@@ -55,10 +53,10 @@ const UserListItem: React.FC<UserListItemProps> = ({
               <User size={12} className="mr-1" />
               {role === 'admin' ? t('administrator') : t('user')}
             </span>
-            {(department || position) && (
+            {department && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 <Briefcase size={12} className="mr-1" />
-                {position || department}
+                {department}
               </span>
             )}
           </div>
