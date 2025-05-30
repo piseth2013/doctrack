@@ -28,7 +28,7 @@ useEffect(() => {
       if (data?.logo_url) {
         const { data: urlData } = supabase.storage
           .from('logoUpload')
-          .getPublicUrl(https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload//logo-1748445368677.png); // this must be the correct path in the bucket
+          .getPublicUrl("https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload//logo-1748445368677.png"); // this must be the correct path in the bucket
 
         setLogoUrl(urlData.publicUrl);
       }
