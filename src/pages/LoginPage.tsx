@@ -16,30 +16,36 @@ const LoginPage: React.FC = () => {
   const { user } = useAuth();
   const t = useTranslation();
 
-useEffect(() => {
-  const fetchLogo = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('logo_settings')
-        .select('logo_url')
-        .maybeSingle();
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('logo_settings')
+          .select('logo_url')
+          .maybeSingle();
 
-      if (error) throw error;
-      if (data?.logo_url) {
-        const { data: urlData } = supabase.storage
-          .from('logoUpload')
-          .getPublicUrl("https://tmlolxujcdfktggozuzt.supabase.co/storage/v1/object/public/logoUpload//logo-1748445368677.png"); // this must be the correct path in the bucket
+        if (error) throw error;
+        if (data?.logo_url) {
+          // Get the file name from the full URL
+          const fileName = data.logo_url.split('/').pop();
+          if (fileName) {
+            // Create a new signed URL for the file
+            const { data: { signedUrl } } = await supabase.storage
+              .from('logoUpload')
+              .createSignedUrl(fileName, 60 * 60); // 1 hour expiry
 
-        setLogoUrl(urlData.publicUrl);
+            if (signedUrl) {
+              setLogoUrl(signedUrl);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching logo:', err);
       }
-    } catch (err) {
-      console.error('Error fetching logo:', err);
-    }
-  };
+    };
 
-  fetchLogo();
-}, []);
-
+    fetchLogo();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,7 +151,7 @@ useEffect(() => {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  {('demoCredentials')}
+                  {t('demoCredentials')}
                 </span>
               </div>
             </div>
@@ -165,5 +171,3 @@ useEffect(() => {
     </div>
   );
 };
-
-export default LoginPage;
