@@ -14,7 +14,13 @@ interface User {
   full_name: string;
   role: 'admin' | 'user';
   department: string | null;
+  position: string | null;
   created_at: string;
+}
+
+interface Position {
+  id: string;
+  name: string;
 }
 
 interface UserFormData {
@@ -22,6 +28,7 @@ interface UserFormData {
   full_name: string;
   role: 'admin' | 'user';
   department: string;
+  position: string;
   password?: string;
 }
 
@@ -30,10 +37,12 @@ const initialFormData: UserFormData = {
   full_name: '',
   role: 'user',
   department: '',
+  position: '',
 };
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -71,10 +80,10 @@ const UsersPage: React.FC = () => {
     fetchCurrentUserRole();
   }, []);
 
-  // Fetch users only if current user is admin
+  // Fetch users and positions if current user is admin
   useEffect(() => {
     if (currentUserRole === 'admin') {
-      fetchUsers();
+      Promise.all([fetchUsers(), fetchPositions()]);
     }
   }, [currentUserRole]);
 
@@ -92,6 +101,21 @@ const UsersPage: React.FC = () => {
       setError('Failed to load users');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchPositions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('positions')
+        .select('id, name')
+        .order('name');
+
+      if (error) throw error;
+      setPositions(data || []);
+    } catch (error) {
+      console.error('Error fetching positions:', error);
+      setError('Failed to load positions');
     }
   };
 
@@ -116,6 +140,7 @@ const UsersPage: React.FC = () => {
       full_name: userToEdit.full_name,
       role: userToEdit.role,
       department: userToEdit.department || '',
+      position: userToEdit.position || '',
     });
     setEditingUserId(userId);
     setShowForm(true);
@@ -175,6 +200,7 @@ const UsersPage: React.FC = () => {
             full_name: formData.full_name,
             role: formData.role,
             department: formData.department || null,
+            position: formData.position || null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', editingUserId);
@@ -213,7 +239,8 @@ const UsersPage: React.FC = () => {
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (user.department && user.department.toLowerCase().includes(searchQuery.toLowerCase()))
+    (user.department && user.department.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (user.position && user.position.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (currentUserRole !== 'admin') {
@@ -310,7 +337,7 @@ const UsersPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
                     {t('role')}
@@ -324,6 +351,26 @@ const UsersPage: React.FC = () => {
                   >
                     <option value="user">{t('user')}</option>
                     <option value="admin">{t('administrator')}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('position')}
+                  </label>
+                  <select
+                    id="position"
+                    name="position"
+                    value={formData.position}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  >
+                    <option value="">{t('selectPosition')}</option>
+                    {positions.map(position => (
+                      <option key={position.id} value={position.name}>
+                        {position.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -397,6 +444,7 @@ const UsersPage: React.FC = () => {
                 fullName={user.full_name}
                 role={user.role}
                 department={user.department}
+                position={user.position}
                 createdAt={user.created_at}
                 onDelete={handleDeleteUser}
                 onEdit={handleEdit}
