@@ -61,7 +61,7 @@ const LoginPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
@@ -69,11 +69,13 @@ const LoginPage: React.FC = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           {logoUrl ? (
-            <img 
-              src={logoUrl} 
-              alt="Company Logo" 
-              className="h-16 w-auto"
-            />
+            <div className="w-[512px] h-[512px] max-w-32 max-h-32 flex items-center justify-center">
+              <img 
+                src={logoUrl} 
+                alt="Company Logo" 
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
           ) : (
             <div className="rounded-full bg-primary-100 p-3">
               <FileLock size={40} className="text-primary-600" />

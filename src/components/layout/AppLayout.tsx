@@ -91,11 +91,13 @@ const AppLayout: React.FC = () => {
           <div className="flex items-center flex-shrink-0 px-4">
             <div className="flex flex-col items-center w-full">
               {logoUrl ? (
-                <img 
-                  src={logoUrl} 
-                  alt="Company Logo" 
-                  className="h-12 w-auto mb-2"
-                />
+                <div className="w-[512px] h-[512px] max-w-full max-h-32 flex items-center justify-center">
+                  <img 
+                    src={logoUrl} 
+                    alt="Company Logo" 
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
               ) : (
                 <h1 className="text-white text-2xl font-bold">DocTrack</h1>
               )}
@@ -152,11 +154,13 @@ const AppLayout: React.FC = () => {
         <div className="px-4 py-2 flex items-center justify-between">
           <div className="flex items-center">
             {logoUrl ? (
-              <img 
-                src={logoUrl} 
-                alt="Company Logo" 
-                className="h-8 w-auto"
-              />
+              <div className="w-[512px] h-[512px] max-w-32 max-h-8 flex items-center justify-center">
+                <img 
+                  src={logoUrl} 
+                  alt="Company Logo" 
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
             ) : (
               <h1 className="text-primary-800 text-xl font-bold">DocTrack</h1>
             )}
