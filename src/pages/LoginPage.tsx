@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
         const { data, error } = await supabase
           .from('logo_settings')
           .select('logo_url')
-          .maybeSingle(); // allows 0 or 1 row
+          .maybeSingle();
 
         if (error) throw error;
         if (data) {
@@ -30,7 +30,6 @@ const LoginPage: React.FC = () => {
         }
       } catch (err) {
         console.error('Error fetching logo:', err);
-        // Logo is optional, so we just log the error
       }
     };
 
@@ -61,15 +60,15 @@ const LoginPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-6">
           {logoUrl ? (
-            <div className="w-[512px] h-[512px] max-w-32 max-h-32 flex items-center justify-center">
+            <div className="w-[512px] h-[512px] max-w-[200px] max-h-[200px] flex items-center justify-center">
               <img 
                 src={logoUrl} 
                 alt="Company Logo" 
