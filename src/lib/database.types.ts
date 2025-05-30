@@ -74,6 +74,7 @@ export interface Database {
           full_name: string
           role: 'admin' | 'user'
           department: string | null
+          position: string | null
           created_at: string
           updated_at: string
         }
@@ -83,6 +84,7 @@ export interface Database {
           full_name: string
           role?: 'admin' | 'user'
           department?: string | null
+          position?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -92,6 +94,7 @@ export interface Database {
           full_name?: string
           role?: 'admin' | 'user'
           department?: string | null
+          position?: string | null
           created_at?: string
           updated_at?: string
         }
