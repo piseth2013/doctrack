@@ -17,19 +17,23 @@ const LoginPage: React.FC = () => {
   const t = useTranslation();
 
   useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('logo_settings')
-          .select('logo_url')
-          .single();
+   const fetchLogo = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('logo_settings')
+      .select('logo_url')
+      .maybeSingle(); // allows 0 or 1 row
 
-        if (error) throw error;
-        setLogoUrl(data?.logo_url);
-      } catch (err) {
-        console.error('Error fetching logo:', err);
-        // Don't show error to user since logo is optional
-      }
+    if (error) throw error;
+    if (data) {
+      setLogoUrl(data.logo_url);
+    }
+  } catch (err) {
+    console.error('Error fetching logo:', err);
+    // Logo is optional, so we just log the error
+  }
+};
+
     };
 
     fetchLogo();
