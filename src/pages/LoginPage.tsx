@@ -25,8 +25,19 @@ const LoginPage: React.FC = () => {
           .maybeSingle();
 
         if (error) throw error;
-        if (data) {
-          setLogoUrl(data.logo_url);
+        if (data?.logo_url) {
+          // Get the file name from the full URL
+          const fileName = data.logo_url.split('/').pop();
+          if (fileName) {
+            // Create a new signed URL for the file
+            const { data: { signedUrl } } = await supabase.storage
+              .from('logoUpload')
+              .createSignedUrl(fileName, 60 * 60); // 1 hour expiry
+
+            if (signedUrl) {
+              setLogoUrl(signedUrl);
+            }
+          }
         }
       } catch (err) {
         console.error('Error fetching logo:', err);
@@ -60,7 +71,7 @@ const LoginPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
