@@ -30,9 +30,9 @@ const LoginPage: React.FC = () => {
           const fileName = data.logo_url.split('/').pop();
           if (fileName) {
             // Create a new signed URL for the file
-            // const { data: { signedUrl } } = await supabase.storage
-            //   .from('logoUpload')
-            //   .createSignedUrl(fileName, 60 * 60); // 1 hour expiry
+            const { data: { signedUrl } } = await supabase.storage
+              .from('logoUpload')
+              .createSignedUrl(fileName, 60 * 60); // 1 hour expiry
 
             if (signedUrl) {
               setLogoUrl(signedUrl);
@@ -46,7 +46,6 @@ const LoginPage: React.FC = () => {
 
     fetchLogo();
   }, []);
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
