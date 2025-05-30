@@ -26,10 +26,9 @@ const LoginPage: React.FC = () => {
 
         if (error) throw error;
         if (data?.logo_url) {
-          // Get the public URL for the logo
           const { data: { publicUrl } } = supabase.storage
             .from('logoUpload')
-            .getPublicUrl(data.logo_url);
+            .getPublicUrl(data.logo_url.split('/').pop() || '');
           setLogoUrl(publicUrl);
         }
       } catch (err) {
@@ -64,7 +63,7 @@ const LoginPage: React.FC = () => {
   };
 
   if (user) {
-    return <Navigate to="/dashboard\" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
