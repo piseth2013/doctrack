@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import DocumentsPage from './pages/DocumentsPage';
 import DocumentDetailPage from './pages/DocumentDetailPage';
 import NewDocumentPage from './pages/NewDocumentPage';
+import SearchPage from './pages/SearchPage';
 import SettingsPage from './pages/SettingsPage';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
             <Route path="documents" element={<DocumentsPage />} />
             <Route path="documents/:id" element={<DocumentDetailPage />} />
             <Route path="documents/new" element={<NewDocumentPage />} />
+            <Route path="search" element={<SearchPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
           

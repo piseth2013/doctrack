@@ -7,7 +7,8 @@ import {
   PlusCircle, 
   LogOut, 
   Menu, 
-  X
+  X,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthWrapper';
 import Avatar from '../ui/Avatar';
@@ -58,6 +59,12 @@ const AppLayout: React.FC = () => {
       name: t('newDocument'),
       icon: <PlusCircle size={20} />,
       path: '/documents/new',
+      exact: true
+    },
+    {
+      name: 'Search',
+      icon: <Search size={20} />,
+      path: '/search',
       exact: true
     },
     {

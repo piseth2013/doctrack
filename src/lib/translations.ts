@@ -28,6 +28,7 @@ export const translations = {
     signOut: 'Sign out',
     comingSoon: 'More settings coming soon...',
     selectPosition: 'Select Position',
+    search: 'Search',
 
     // Organization
     offices: 'Offices',
@@ -245,6 +246,7 @@ export const translations = {
     signOut: 'ចាកចេញ',
     comingSoon: 'ការកំណត់បន្ថែមនឹងមកដល់ឆាប់ៗនេះ...',
     selectPosition: 'ជ្រើសរើសតំណែង',
+    search: 'ស្វែងរក',
 
     // Organization
     offices: 'ការិយាល័យ',
