@@ -2,7 +2,7 @@ import React from 'react';
 import { twMerge } from 'tailwind-merge';
 import { useTranslation } from '../../lib/translations';
 
-type StatusType = 'pending' | 'approved' | 'rejected' | 'draft';
+type StatusType = 'pending' | 'approved' | 'rejected' | 'needs_changes' | 'draft';
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -27,6 +27,11 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
       bg: 'bg-error-50',
       text: 'text-error-700',
       label: t('rejected'),
+    },
+    needs_changes: {
+      bg: 'bg-orange-50',
+      text: 'text-orange-700',
+      label: 'Needs Changes',
     },
     draft: {
       bg: 'bg-gray-50',
