@@ -116,7 +116,7 @@ const ApproverDashboard: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader size="lg" text="Loading documents for approval..." />
+        <Loader size="lg\" text="Loading documents for approval..." />
       </div>
     );
   }
