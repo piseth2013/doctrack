@@ -62,7 +62,7 @@ const AppLayout: React.FC = () => {
       exact: true
     },
     {
-      name: 'Search',
+      name: t('search'),
       icon: <Search size={20} />,
       path: '/search',
       exact: true

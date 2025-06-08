@@ -1,17 +1,3 @@
-import { create } from 'zustand';
-
-type Language = 'en' | 'km';
-
-interface TranslationStore {
-  language: Language;
-  setLanguage: (lang: Language) => void;
-}
-
-export const useTranslationStore = create<TranslationStore>((set) => ({
-  language: 'en',
-  setLanguage: (lang) => set({ language: lang }),
-}));
-
 export const translations = {
   en: {
     // Navigation
@@ -29,6 +15,51 @@ export const translations = {
     comingSoon: 'More settings coming soon...',
     selectPosition: 'Select Position',
     search: 'Search',
+
+    // Search Page
+    searchDocuments: 'Search Documents',
+    findDocumentsAdvancedFilters: 'Find documents using advanced filters',
+    hideFilters: 'Hide Filters',
+    showFilters: 'Show Filters',
+    cards: 'Cards',
+    table: 'Table',
+    searchFilters: 'Search Filters',
+    clearAll: 'Clear All',
+    title: 'Title',
+    searchByDocumentTitle: 'Search by document title...',
+    description: 'Description',
+    searchByDescription: 'Search by description...',
+    status: 'Status',
+    allStatuses: 'All Statuses',
+    pending: 'Pending',
+    approved: 'Approved',
+    rejected: 'Rejected',
+    needsChanges: 'Needs Changes',
+    dateFrom: 'Date From',
+    dateTo: 'Date To',
+    submitter: 'Submitter',
+    searchBySubmitterName: 'Search by submitter name...',
+    searchDocumentsButton: 'Search Documents',
+    retry: 'Retry',
+    searchingDocuments: 'Searching documents...',
+    searchResults: 'Search Results',
+    found: 'found',
+    view: 'View',
+    submittedBy: 'Submitted by',
+    date: 'Date',
+    files: 'files',
+    document: 'Document',
+    actions: 'Actions',
+    showing: 'Showing',
+    to: 'to',
+    of: 'of',
+    results: 'results',
+    previous: 'Previous',
+    next: 'Next',
+    noDocumentsFound: 'No documents found',
+    tryAdjustingSearchFilters: 'Try adjusting your search filters or search terms.',
+    readyToSearch: 'Ready to search',
+    useFiltersAboveToSearch: 'Use the filters above to search for documents in the system.',
 
     // Organization
     offices: 'Offices',
@@ -69,9 +100,6 @@ export const translations = {
     // Dashboard
     overview: 'Overview of your document management system',
     totalDocuments: 'Total Documents',
-    pending: 'Pending',
-    approved: 'Approved',
-    rejected: 'Rejected',
     recentDocuments: 'Recent Documents',
     quickLinks: 'Quick Links',
     uploadNewDocument: 'Upload New Document',
@@ -79,7 +107,6 @@ export const translations = {
     manageUsers: 'Manage Users',
     systemStats: 'System Stats',
     totalUsers: 'Total Users',
-    noDocumentsFound: 'No documents found',
     createFirstDocument: 'Create your first document',
 
     // Users
@@ -110,9 +137,6 @@ export const translations = {
     demoCredentials: 'Demo credentials',
 
     // Document form translations
-    title: 'Title',
-    description: 'Description',
-    files: 'Files',
     create: 'Create Document',
     creating: 'Creating...',
 
@@ -125,7 +149,6 @@ export const translations = {
     removeFile: 'Remove file',
 
     // Document approval
-    needsChanges: 'Needs Changes',
     approvalActions: 'Approval Actions',
     approve: 'Approve',
     reject: 'Reject',
@@ -133,7 +156,6 @@ export const translations = {
     comment: 'Comment',
     approverComment: 'Approver Comment',
     noteToApprover: 'Note to Approver',
-    submittedBy: 'Submitted by',
     assignedApprover: 'Assigned Approver',
     submittedOn: 'Submitted on',
     lastUpdated: 'Last updated',
@@ -150,13 +172,10 @@ export const translations = {
     documentNotFound: 'Document not found',
     deleteDocument: 'Delete Document',
     uploadedOn: 'uploaded on',
-    view: 'View',
     download: 'Download',
     error: 'Error',
     tryAgain: 'Try Again',
     all: 'All',
-    searchDocuments: 'Search documents...',
-    status: 'Status',
     tryChangingFilter: 'Try changing the filter or search terms',
 
     // New Document Page
@@ -214,7 +233,6 @@ export const translations = {
     totalAssigned: 'Total Assigned',
     pendingReview: 'Pending Review',
     noteFromSubmitter: 'Note from submitter',
-    date: 'Date',
     review: 'Review',
     noDocumentsAssignedForApproval: 'No documents have been assigned to you for approval yet.',
     failedToLoadDocumentsForApproval: 'Failed to load documents for approval',
@@ -247,6 +265,51 @@ export const translations = {
     comingSoon: 'ការកំណត់បន្ថែមនឹងមកដល់ឆាប់ៗនេះ...',
     selectPosition: 'ជ្រើសរើសតំណែង',
     search: 'ស្វែងរក',
+
+    // Search Page
+    searchDocuments: 'ស្វែងរកឯកសារ',
+    findDocumentsAdvancedFilters: 'រកឯកសារដោយប្រើតម្រងកម្រិតខ្ពស់',
+    hideFilters: 'លាក់តម្រង',
+    showFilters: 'បង្ហាញតម្រង',
+    cards: 'កាត',
+    table: 'តារាង',
+    searchFilters: 'តម្រងស្វែងរក',
+    clearAll: 'សម្អាតទាំងអស់',
+    title: 'ចំណងជើង',
+    searchByDocumentTitle: 'ស្វែងរកតាមចំណងជើងឯកសារ...',
+    description: 'ការពិពណ៌នា',
+    searchByDescription: 'ស្វែងរកតាមការពិពណ៌នា...',
+    status: 'ស្ថានភាព',
+    allStatuses: 'ស្ថានភាពទាំងអស់',
+    pending: 'កំពុងរង់ចាំ',
+    approved: 'បានអនុម័ត',
+    rejected: 'បានបដិសេធ',
+    needsChanges: 'ត្រូវការការផ្លាស់ប្តូរ',
+    dateFrom: 'កាលបរិច្ឆេទពី',
+    dateTo: 'កាលបរិច្ឆេទដល់',
+    submitter: 'អ្នកដាក់ស្នើ',
+    searchBySubmitterName: 'ស្វែងរកតាមឈ្មោះអ្នកដាក់ស្នើ...',
+    searchDocumentsButton: 'ស្វែងរកឯកសារ',
+    retry: 'ព្យាយាមម្តងទៀត',
+    searchingDocuments: 'កំពុងស្វែងរកឯកសារ...',
+    searchResults: 'លទ្ធផលស្វែងរក',
+    found: 'រកឃើញ',
+    view: 'មើល',
+    submittedBy: 'ដាក់ស្នើដោយ',
+    date: 'កាលបរិច្ឆេទ',
+    files: 'ឯកសារ',
+    document: 'ឯកសារ',
+    actions: 'សកម្មភាព',
+    showing: 'បង្ហាញ',
+    to: 'ដល់',
+    of: 'នៃ',
+    results: 'លទ្ធផល',
+    previous: 'មុន',
+    next: 'បន្ទាប់',
+    noDocumentsFound: 'រកមិនឃើញឯកសារ',
+    tryAdjustingSearchFilters: 'ព្យាយាមកែសម្រួលតម្រងស្វែងរកឬពាក្យស្វែងរករបស់អ្នក។',
+    readyToSearch: 'រួចរាល់ដើម្បីស្វែងរក',
+    useFiltersAboveToSearch: 'ប្រើតម្រងខាងលើដើម្បីស្វែងរកឯកសារក្នុងប្រព័ន្ធ។',
 
     // Organization
     offices: 'ការិយាល័យ',
@@ -287,9 +350,6 @@ export const translations = {
     // Dashboard
     overview: 'ទិដ្ឋភាពទូទៅនៃប្រព័ន្ធគ្រប់គ្រងឯកសាររបស់អ្នក',
     totalDocuments: 'ឯកសារសរុប',
-    pending: 'កំពុងរង់ចាំ',
-    approved: 'បានអនុម័ត',
-    rejected: 'បានបដិសេធ',
     recentDocuments: 'ឯកសារថ្មីៗ',
     quickLinks: 'តំណភ្ជាប់រហ័ស',
     uploadNewDocument: 'បង្ហោះឯកសារថ្មី',
@@ -297,7 +357,6 @@ export const translations = {
     manageUsers: 'គ្រប់គ្រងអ្នកប្រើប្រាស់',
     systemStats: 'ស្ថិតិប្រព័ន្ធ',
     totalUsers: 'អ្នកប្រើប្រាស់សរុប',
-    noDocumentsFound: 'រកមិនឃើញឯកសារ',
     createFirstDocument: 'បង្កើតឯកសារដំបូងរបស់អ្នក',
 
     // Users
@@ -328,9 +387,6 @@ export const translations = {
     demoCredentials: 'ព័ត៌មានគណនីសាកល្បង',
 
     // Document form translations
-    title: 'ចំណងជើង',
-    description: 'ការពិពណ៌នា',
-    files: 'ឯកសារ',
     create: 'បង្កើតឯកសារ',
     creating: 'កំពុងបង្កើត...',
 
@@ -343,7 +399,6 @@ export const translations = {
     removeFile: 'លុបឯកសារ',
 
     // Document approval
-    needsChanges: 'ត្រូវការការផ្លាស់ប្តូរ',
     approvalActions: 'សកម្មភាពអនុម័ត',
     approve: 'អនុម័ត',
     reject: 'បដិសេធ',
@@ -351,7 +406,6 @@ export const translations = {
     comment: 'មតិយោបល់',
     approverComment: 'មតិយោបល់អ្នកអនុម័ត',
     noteToApprover: 'កំណត់ចំណាំដល់អ្នកអនុម័ត',
-    submittedBy: 'ដាក់ស្នើដោយ',
     assignedApprover: 'អ្នកអនុម័តដែលបានកំណត់',
     submittedOn: 'ដាក់ស្នើនៅ',
     lastUpdated: 'ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ',
@@ -368,13 +422,10 @@ export const translations = {
     documentNotFound: 'រកមិនឃើញឯកសារ',
     deleteDocument: 'លុបឯកសារ',
     uploadedOn: 'បានបង្ហោះនៅ',
-    view: 'មើល',
     download: 'ទាញយក',
     error: 'កំហុស',
     tryAgain: 'ព្យាយាមម្តងទៀត',
     all: 'ទាំងអស់',
-    searchDocuments: 'ស្វែងរកឯកសារ...',
-    status: 'ស្ថានភាព',
     tryChangingFilter: 'ព្យាយាមផ្លាស់ប្តូរតម្រងឬពាក្យស្វែងរក',
 
     // New Document Page
@@ -432,7 +483,6 @@ export const translations = {
     totalAssigned: 'បានកំណត់សរុប',
     pendingReview: 'កំពុងរង់ចាំការពិនិត្យ',
     noteFromSubmitter: 'កំណត់ចំណាំពីអ្នកដាក់ស្នើ',
-    date: 'កាលបរិច្ឆេទ',
     review: 'ពិនិត្យ',
     noDocumentsAssignedForApproval: 'មិនទាន់មានឯកសារណាមួយត្រូវបានកំណត់ឱ្យអ្នកសម្រាប់ការអនុម័តនៅឡើយទេ។',
     failedToLoadDocumentsForApproval: 'បរាជ័យក្នុងការផ្ទុកឯកសារសម្រាប់ការអនុម័ត',

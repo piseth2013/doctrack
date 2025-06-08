@@ -178,7 +178,7 @@ const SearchPage: React.FC = () => {
       setTotalResults(filteredResults.length);
     } catch (err) {
       console.error('Search error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to search documents');
+      setError(err instanceof Error ? err.message : t('failedToFetchDocuments'));
       setResults([]);
       setTotalResults(0);
     } finally {
@@ -207,7 +207,7 @@ const SearchPage: React.FC = () => {
               <div className="ml-3">
                 <Link to={`/documents/${document.id}`}>
                   <Button variant="outline" size="sm" leftIcon={<Eye size={14} />}>
-                    View
+                    {t('view')}
                   </Button>
                 </Link>
               </div>
@@ -222,15 +222,15 @@ const SearchPage: React.FC = () => {
             <div className="space-y-2 text-sm text-gray-500">
               <div className="flex items-center">
                 <FileText size={14} className="mr-2" />
-                <span>Submitted by: {document.submitter?.full_name}</span>
+                <span>{t('submittedBy')}: {document.submitter?.full_name}</span>
               </div>
               <div className="flex items-center">
                 <Calendar size={14} className="mr-2" />
-                <span>Date: {format(new Date(document.created_at), 'MMM d, yyyy')}</span>
+                <span>{t('date')}: {format(new Date(document.created_at), 'MMM d, yyyy')}</span>
               </div>
               <div className="flex items-center">
                 <FileText size={14} className="mr-2" />
-                <span>{document.document_files?.length || 0} files</span>
+                <span>{document.document_files?.length || 0} {t('files')}</span>
               </div>
             </div>
           </CardBody>
@@ -246,22 +246,22 @@ const SearchPage: React.FC = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Document
+                {t('document')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
+                {t('status')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Submitter
+                {t('submitter')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
+                {t('date')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Files
+                {t('files')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
+                {t('actions')}
               </th>
             </tr>
           </thead>
@@ -296,7 +296,7 @@ const SearchPage: React.FC = () => {
                 <td className="px-6 py-4">
                   <Link to={`/documents/${document.id}`}>
                     <Button variant="outline" size="sm" leftIcon={<Eye size={14} />}>
-                      View
+                      {t('view')}
                     </Button>
                   </Link>
                 </td>
@@ -314,7 +314,7 @@ const SearchPage: React.FC = () => {
     return (
       <div className="flex items-center justify-between mt-6">
         <div className="text-sm text-gray-700">
-          Showing {startIndex + 1} to {Math.min(endIndex, totalResults)} of {totalResults} results
+          {t('showing')} {startIndex + 1} {t('to')} {Math.min(endIndex, totalResults)} {t('of')} {totalResults} {t('results')}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -324,7 +324,7 @@ const SearchPage: React.FC = () => {
             disabled={currentPage === 1}
             leftIcon={<ChevronLeft size={16} />}
           >
-            Previous
+            {t('previous')}
           </Button>
           
           <div className="flex items-center space-x-1">
@@ -363,7 +363,7 @@ const SearchPage: React.FC = () => {
             disabled={currentPage === totalPages}
             rightIcon={<ChevronRight size={16} />}
           >
-            Next
+            {t('next')}
           </Button>
         </div>
       </div>
@@ -374,8 +374,8 @@ const SearchPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Search Documents</h1>
-          <p className="text-gray-600 mt-1">Find documents using advanced filters</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('searchDocuments')}</h1>
+          <p className="text-gray-600 mt-1">{t('findDocumentsAdvancedFilters')}</p>
         </div>
         <div className="mt-4 md:mt-0 flex items-center space-x-2">
           <Button
@@ -384,7 +384,7 @@ const SearchPage: React.FC = () => {
             onClick={() => setShowFilters(!showFilters)}
             leftIcon={<Filter size={16} />}
           >
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
+            {showFilters ? t('hideFilters') : t('showFilters')}
           </Button>
           <div className="flex items-center bg-white border border-gray-300 rounded-md p-1">
             <button
@@ -395,7 +395,7 @@ const SearchPage: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Cards
+              {t('cards')}
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -405,7 +405,7 @@ const SearchPage: React.FC = () => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Table
+              {t('table')}
             </button>
           </div>
         </div>
@@ -416,30 +416,30 @@ const SearchPage: React.FC = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">Search Filters</h2>
+              <h2 className="text-lg font-medium text-gray-900">{t('searchFilters')}</h2>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={clearFilters}
                 leftIcon={<X size={16} />}
               >
-                Clear All
+                {t('clearAll')}
               </Button>
             </div>
           </CardHeader>
           <CardBody>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               <Input
-                label="Title"
-                placeholder="Search by document title..."
+                label={t('title')}
+                placeholder={t('searchByDocumentTitle')}
                 value={filters.title}
                 onChange={(e) => handleFilterChange('title', e.target.value)}
                 leftIcon={<Search size={18} />}
               />
               
               <Input
-                label="Description"
-                placeholder="Search by description..."
+                label={t('description')}
+                placeholder={t('searchByDescription')}
                 value={filters.description}
                 onChange={(e) => handleFilterChange('description', e.target.value)}
                 leftIcon={<FileText size={18} />}
@@ -447,23 +447,23 @@ const SearchPage: React.FC = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
+                  {t('status')}
                 </label>
                 <select
                   value={filters.status}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
                   className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
-                  <option value="">All Statuses</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="needs_changes">Needs Changes</option>
+                  <option value="">{t('allStatuses')}</option>
+                  <option value="pending">{t('pending')}</option>
+                  <option value="approved">{t('approved')}</option>
+                  <option value="rejected">{t('rejected')}</option>
+                  <option value="needs_changes">{t('needsChanges')}</option>
                 </select>
               </div>
               
               <Input
-                label="Date From"
+                label={t('dateFrom')}
                 type="date"
                 value={filters.dateFrom}
                 onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
@@ -471,7 +471,7 @@ const SearchPage: React.FC = () => {
               />
               
               <Input
-                label="Date To"
+                label={t('dateTo')}
                 type="date"
                 value={filters.dateTo}
                 onChange={(e) => handleFilterChange('dateTo', e.target.value)}
@@ -479,8 +479,8 @@ const SearchPage: React.FC = () => {
               />
               
               <Input
-                label="Submitter"
-                placeholder="Search by submitter name..."
+                label={t('submitter')}
+                placeholder={t('searchBySubmitterName')}
                 value={filters.submitter}
                 onChange={(e) => handleFilterChange('submitter', e.target.value)}
                 leftIcon={<Search size={18} />}
@@ -494,7 +494,7 @@ const SearchPage: React.FC = () => {
                 isLoading={isLoading}
                 leftIcon={<Search size={16} />}
               >
-                Search Documents
+                {t('searchDocumentsButton')}
               </Button>
             </div>
           </CardBody>
@@ -512,7 +512,7 @@ const SearchPage: React.FC = () => {
               onClick={handleSearch}
               leftIcon={<RefreshCw size={16} />}
             >
-              Retry
+              {t('retry')}
             </Button>
           </CardBody>
         </Card>
@@ -521,7 +521,7 @@ const SearchPage: React.FC = () => {
       {/* Loading State */}
       {isLoading && (
         <div className="flex justify-center py-12">
-          <Loader size="lg" text="Searching documents..." />
+          <Loader size="lg" text={t('searchingDocuments')} />
         </div>
       )}
 
@@ -530,7 +530,7 @@ const SearchPage: React.FC = () => {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-medium text-gray-900">
-              Search Results ({totalResults} found)
+              {t('searchResults')} ({totalResults} {t('found')})
             </h2>
           </div>
 
@@ -546,9 +546,9 @@ const SearchPage: React.FC = () => {
                   <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
                     <Search className="h-6 w-6 text-gray-600" />
                   </div>
-                  <h3 className="mt-3 text-lg font-medium text-gray-900">No documents found</h3>
+                  <h3 className="mt-3 text-lg font-medium text-gray-900">{t('noDocumentsFound')}</h3>
                   <p className="mt-2 text-sm text-gray-500">
-                    Try adjusting your search filters or search terms.
+                    {t('tryAdjustingSearchFilters')}
                   </p>
                 </div>
               </CardBody>
@@ -565,9 +565,9 @@ const SearchPage: React.FC = () => {
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary-100">
                 <Search className="h-6 w-6 text-primary-600" />
               </div>
-              <h3 className="mt-3 text-lg font-medium text-gray-900">Ready to search</h3>
+              <h3 className="mt-3 text-lg font-medium text-gray-900">{t('readyToSearch')}</h3>
               <p className="mt-2 text-sm text-gray-500">
-                Use the filters above to search for documents in the system.
+                {t('useFiltersAboveToSearch')}
               </p>
             </div>
           </CardBody>
