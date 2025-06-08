@@ -107,7 +107,7 @@ const SubmitterDashboard: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader size="lg" text="Loading your submitted documents..." />
+        <Loader size="lg\" text="Loading your submitted documents..." />
       </div>
     );
   }

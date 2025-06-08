@@ -271,7 +271,7 @@ const DocumentDetailPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader size="lg" text="Loading document details..." />
+        <Loader size="lg\" text="Loading document details..." />
       </div>
     );
   }
