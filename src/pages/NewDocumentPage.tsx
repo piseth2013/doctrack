@@ -42,8 +42,8 @@ export default function NewDocumentPage() {
     navigate('/documents', { 
       state: { 
         message: resubmitId 
-          ? 'Document resubmitted successfully!' 
-          : 'Document submitted successfully for approval!' 
+          ? t('documentResubmittedSuccessfully') 
+          : t('documentSubmittedSuccessfully') 
       }
     });
   };
@@ -64,17 +64,17 @@ export default function NewDocumentPage() {
           leftIcon={<ArrowLeft size={16} />}
           onClick={() => navigate('/documents')}
         >
-          Back to Documents
+          {t('backToDocuments')}
         </Button>
       </div>
 
       {resubmitId && originalDocument && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
           <h3 className="text-sm font-medium text-blue-800 mb-1">
-            Resubmitting Document
+            {t('resubmittingDocument')}
           </h3>
           <p className="text-sm text-blue-700">
-            You are resubmitting "{originalDocument.title}". Please make the requested changes and submit again.
+            {t('resubmittingDocumentDescription').replace('{title}', originalDocument.title)}
           </p>
         </div>
       )}

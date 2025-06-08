@@ -156,8 +156,13 @@ export const translations = {
     all: 'All',
     searchDocuments: 'Search documents...',
     status: 'Status',
-    noDescription: 'No description available',
     tryChangingFilter: 'Try changing the filter or search terms',
+
+    // New Document Page
+    documentSubmittedSuccessfully: 'Document submitted successfully for approval!',
+    documentResubmittedSuccessfully: 'Document resubmitted successfully!',
+    resubmittingDocument: 'Resubmitting Document',
+    resubmittingDocumentDescription: 'You are resubmitting "{title}". Please make the requested changes and submit again.',
   },
   km: {
     // Navigation
@@ -302,8 +307,13 @@ export const translations = {
     all: 'ទាំងអស់',
     searchDocuments: 'ស្វែងរកឯកសារ...',
     status: 'ស្ថានភាព',
-    noDescription: 'មិនមានការពិពណ៌នា',
     tryChangingFilter: 'ព្យាយាមផ្លាស់ប្តូរតម្រងឬពាក្យស្វែងរក',
+
+    // New Document Page
+    documentSubmittedSuccessfully: 'ឯកសារត្រូវបានដាក់ស្នើដោយជោគជ័យសម្រាប់ការអនុម័ត!',
+    documentResubmittedSuccessfully: 'ឯកសារត្រូវបានដាក់ស្នើឡើងវិញដោយជោគជ័យ!',
+    resubmittingDocument: 'កំពុងដាក់ស្នើឯកសារឡើងវិញ',
+    resubmittingDocumentDescription: 'អ្នកកំពុងដាក់ស្នើឯកសារ "{title}" ឡើងវិញ។ សូមធ្វើការផ្លាស់ប្តូរដែលបានស្នើសុំ ហើយដាក់ស្នើម្តងទៀត។',
   },
 };
 
