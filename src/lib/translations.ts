@@ -181,6 +181,54 @@ export const translations = {
     failedToUpload: 'Failed to upload',
     failedToCreateFileRecord: 'Failed to create file record',
     failedToSubmitDocument: 'Failed to submit document',
+
+    // Documents Page
+    manageAndTrackDocuments: 'Manage and track your document submissions and approvals',
+    submitNewDocument: 'Submit New Document',
+    mySubmissions: 'My Submissions',
+    forMyApproval: 'For My Approval',
+    allDocuments: 'All Documents',
+    submitFirstDocument: 'Submit First Document',
+    noDocumentsWithStatus: 'No documents with status "{status}" found.',
+    noDocumentsSubmitted: 'No documents have been submitted yet.',
+    failedToFetchDocuments: 'Failed to fetch documents',
+    loadingDocuments: 'Loading documents...',
+
+    // Submitter Dashboard
+    trackSubmittedDocuments: 'Track the status of your submitted documents',
+    totalSubmitted: 'Total Submitted',
+    searchYourDocuments: 'Search your documents...',
+    approver: 'Approver',
+    submitted: 'Submitted',
+    reviewed: 'Reviewed',
+    viewDetails: 'View Details',
+    resubmit: 'Resubmit',
+    noDocumentsSubmittedYet: 'You haven\'t submitted any documents yet.',
+    failedToLoadSubmittedDocuments: 'Failed to load your submitted documents',
+    loadingSubmittedDocuments: 'Loading your submitted documents...',
+
+    // Approver Dashboard
+    approverDashboard: 'Approver Dashboard',
+    reviewAndApproveDocuments: 'Review and approve documents assigned to you',
+    totalAssigned: 'Total Assigned',
+    pendingReview: 'Pending Review',
+    noteFromSubmitter: 'Note from submitter',
+    date: 'Date',
+    review: 'Review',
+    noDocumentsAssignedForApproval: 'No documents have been assigned to you for approval yet.',
+    failedToLoadDocumentsForApproval: 'Failed to load documents for approval',
+    loadingDocumentsForApproval: 'Loading documents for approval...',
+
+    // Approval Actions
+    reviewAndTakeAction: 'Review and take action on this document',
+    chooseActionToTake: 'Choose an action to take on this document',
+    approvingDocument: 'Approving Document',
+    rejectingDocument: 'Rejecting Document',
+    requestingChanges: 'Requesting Changes',
+    addApprovalComments: 'Add approval comments...',
+    explainRejectionReason: 'Explain why this document is being rejected...',
+    specifyChangesNeeded: 'Specify what changes are needed...',
+    confirmAction: 'Confirm {action}',
   },
   km: {
     // Navigation
@@ -350,6 +398,54 @@ export const translations = {
     failedToUpload: 'បរាជ័យក្នុងការបង្ហោះ',
     failedToCreateFileRecord: 'បរាជ័យក្នុងការបង្កើតកំណត់ត្រាឯកសារ',
     failedToSubmitDocument: 'បរាជ័យក្នុងការដាក់ស្នើឯកសារ',
+
+    // Documents Page
+    manageAndTrackDocuments: 'គ្រប់គ្រងនិងតាមដានការដាក់ស្នើឯកសារនិងការអនុម័ត',
+    submitNewDocument: 'ដាក់ស្នើឯកសារថ្មី',
+    mySubmissions: 'ការដាក់ស្នើរបស់ខ្ញុំ',
+    forMyApproval: 'សម្រាប់ការអនុម័តរបស់ខ្ញុំ',
+    allDocuments: 'ឯកសារទាំងអស់',
+    submitFirstDocument: 'ដាក់ស្នើឯកសារដំបូង',
+    noDocumentsWithStatus: 'រកមិនឃើញឯកសារដែលមានស្ថានភាព "{status}"។',
+    noDocumentsSubmitted: 'មិនទាន់មានឯកសារណាមួយត្រូវបានដាក់ស្នើនៅឡើយទេ។',
+    failedToFetchDocuments: 'បរាជ័យក្នុងការទាញយកឯកសារ',
+    loadingDocuments: 'កំពុងផ្ទុកឯកសារ...',
+
+    // Submitter Dashboard
+    trackSubmittedDocuments: 'តាមដានស្ថានភាពនៃឯកសារដែលបានដាក់ស្នើ',
+    totalSubmitted: 'បានដាក់ស្នើសរុប',
+    searchYourDocuments: 'ស្វែងរកឯកសាររបស់អ្នក...',
+    approver: 'អ្នកអនុម័ត',
+    submitted: 'បានដាក់ស្នើ',
+    reviewed: 'បានពិនិត្យ',
+    viewDetails: 'មើលព័ត៌មានលម្អិត',
+    resubmit: 'ដាក់ស្នើឡើងវិញ',
+    noDocumentsSubmittedYet: 'អ្នកមិនទាន់បានដាក់ស្នើឯកសារណាមួយនៅឡើយទេ។',
+    failedToLoadSubmittedDocuments: 'បរាជ័យក្នុងការផ្ទុកឯកសារដែលបានដាក់ស្នើ',
+    loadingSubmittedDocuments: 'កំពុងផ្ទុកឯកសារដែលបានដាក់ស្នើ...',
+
+    // Approver Dashboard
+    approverDashboard: 'ផ្ទាំងគ្រប់គ្រងអ្នកអនុម័ត',
+    reviewAndApproveDocuments: 'ពិនិត្យនិងអនុម័តឯកសារដែលបានកំណត់ឱ្យអ្នក',
+    totalAssigned: 'បានកំណត់សរុប',
+    pendingReview: 'កំពុងរង់ចាំការពិនិត្យ',
+    noteFromSubmitter: 'កំណត់ចំណាំពីអ្នកដាក់ស្នើ',
+    date: 'កាលបរិច្ឆេទ',
+    review: 'ពិនិត្យ',
+    noDocumentsAssignedForApproval: 'មិនទាន់មានឯកសារណាមួយត្រូវបានកំណត់ឱ្យអ្នកសម្រាប់ការអនុម័តនៅឡើយទេ។',
+    failedToLoadDocumentsForApproval: 'បរាជ័យក្នុងការផ្ទុកឯកសារសម្រាប់ការអនុម័ត',
+    loadingDocumentsForApproval: 'កំពុងផ្ទុកឯកសារសម្រាប់ការអនុម័ត...',
+
+    // Approval Actions
+    reviewAndTakeAction: 'ពិនិត្យនិងធ្វើសកម្មភាពលើឯកសារនេះ',
+    chooseActionToTake: 'ជ្រើសរើសសកម្មភាពដែលត្រូវធ្វើលើឯកសារនេះ',
+    approvingDocument: 'កំពុងអនុម័តឯកសារ',
+    rejectingDocument: 'កំពុងបដិសេធឯកសារ',
+    requestingChanges: 'កំពុងស្នើសុំការផ្លាស់ប្តូរ',
+    addApprovalComments: 'បន្ថែមមតិយោបល់អនុម័ត...',
+    explainRejectionReason: 'ពន្យល់ពីមូលហេតុដែលឯកសារនេះត្រូវបានបដិសេធ...',
+    specifyChangesNeeded: 'បញ្ជាក់ការផ្លាស់ប្តូរដែលត្រូវការ...',
+    confirmAction: 'បញ្ជាក់ {action}',
   },
 };
 

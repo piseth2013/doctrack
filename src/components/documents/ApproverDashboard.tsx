@@ -8,6 +8,7 @@ import StatusBadge from '../ui/StatusBadge';
 import Loader from '../ui/Loader';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../auth/AuthWrapper';
+import { useTranslation } from '../../lib/translations';
 import { format } from 'date-fns';
 
 interface DocumentForApproval {
@@ -33,6 +34,7 @@ interface DocumentForApproval {
 
 const ApproverDashboard: React.FC = () => {
   const { user } = useAuth();
+  const t = useTranslation();
   const [documents, setDocuments] = useState<DocumentForApproval[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,7 @@ const ApproverDashboard: React.FC = () => {
       setDocuments(data || []);
     } catch (err) {
       console.error('Error fetching documents for approval:', err);
-      setError('Failed to load documents for approval');
+      setError(t('failedToLoadDocumentsForApproval'));
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +118,7 @@ const ApproverDashboard: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader size="lg\" text="Loading documents for approval..." />
+        <Loader size="lg" text={t('loadingDocumentsForApproval')} />
       </div>
     );
   }
@@ -125,8 +127,8 @@ const ApproverDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Approver Dashboard</h1>
-          <p className="text-gray-600 mt-1">Review and approve documents assigned to you</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('approverDashboard')}</h1>
+          <p className="text-gray-600 mt-1">{t('reviewAndApproveDocuments')}</p>
         </div>
       </div>
 
@@ -138,7 +140,7 @@ const ApproverDashboard: React.FC = () => {
               <FileText size={24} />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Total Assigned</p>
+              <p className="text-white/80 text-sm">{t('totalAssigned')}</p>
               <h3 className="text-2xl font-bold">{getStatusCount('all')}</h3>
             </div>
           </CardBody>
@@ -150,7 +152,7 @@ const ApproverDashboard: React.FC = () => {
               <Clock size={24} />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Pending Review</p>
+              <p className="text-white/80 text-sm">{t('pendingReview')}</p>
               <h3 className="text-2xl font-bold">{getStatusCount('pending')}</h3>
             </div>
           </CardBody>
@@ -162,7 +164,7 @@ const ApproverDashboard: React.FC = () => {
               <CheckCircle size={24} />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Approved</p>
+              <p className="text-white/80 text-sm">{t('approved')}</p>
               <h3 className="text-2xl font-bold">{getStatusCount('approved')}</h3>
             </div>
           </CardBody>
@@ -174,7 +176,7 @@ const ApproverDashboard: React.FC = () => {
               <XCircle size={24} />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Rejected</p>
+              <p className="text-white/80 text-sm">{t('rejected')}</p>
               <h3 className="text-2xl font-bold">{getStatusCount('rejected')}</h3>
             </div>
           </CardBody>
@@ -187,7 +189,7 @@ const ApproverDashboard: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Search documents..."
+                placeholder={t('searchDocuments')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 leftIcon={<Search size={18} />}
@@ -197,15 +199,15 @@ const ApproverDashboard: React.FC = () => {
             <div className="flex items-center gap-2">
               <div className="text-gray-500 flex items-center">
                 <Filter size={16} className="mr-2" />
-                <span className="text-sm">Status:</span>
+                <span className="text-sm">{t('status')}:</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { key: 'all', label: 'All', count: getStatusCount('all') },
-                  { key: 'pending', label: 'Pending', count: getStatusCount('pending') },
-                  { key: 'needs_changes', label: 'Needs Changes', count: getStatusCount('needs_changes') },
-                  { key: 'approved', label: 'Approved', count: getStatusCount('approved') },
-                  { key: 'rejected', label: 'Rejected', count: getStatusCount('rejected') },
+                  { key: 'all', label: t('all'), count: getStatusCount('all') },
+                  { key: 'pending', label: t('pending'), count: getStatusCount('pending') },
+                  { key: 'needs_changes', label: t('needsChanges'), count: getStatusCount('needs_changes') },
+                  { key: 'approved', label: t('approved'), count: getStatusCount('approved') },
+                  { key: 'rejected', label: t('rejected'), count: getStatusCount('rejected') },
                 ].map(({ key, label, count }) => (
                   <button
                     key={key}
@@ -265,7 +267,7 @@ const ApproverDashboard: React.FC = () => {
                         {document.note_to_approver && (
                           <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-3">
                             <p className="text-sm text-blue-800">
-                              <strong>Note from submitter:</strong> {document.note_to_approver}
+                              <strong>{t('noteFromSubmitter')}:</strong> {document.note_to_approver}
                             </p>
                           </div>
                         )}
@@ -273,15 +275,15 @@ const ApproverDashboard: React.FC = () => {
                         <div className="flex flex-wrap gap-4 text-sm text-gray-500">
                           <div className="flex items-center">
                             <User size={14} className="mr-1" />
-                            <span>Submitted by: {document.profiles?.full_name}</span>
+                            <span>{t('submittedBy')}: {document.profiles?.full_name}</span>
                           </div>
                           <div className="flex items-center">
                             <Calendar size={14} className="mr-1" />
-                            <span>Date: {format(new Date(document.created_at), 'MMM d, yyyy')}</span>
+                            <span>{t('date')}: {format(new Date(document.created_at), 'MMM d, yyyy')}</span>
                           </div>
                           <div className="flex items-center">
                             <FileText size={14} className="mr-1" />
-                            <span>{document.document_files?.length || 0} file(s)</span>
+                            <span>{document.document_files?.length || 0} {t('files')}</span>
                           </div>
                         </div>
                       </div>
@@ -291,7 +293,7 @@ const ApproverDashboard: React.FC = () => {
                   <div className="flex-shrink-0 ml-4">
                     <Link to={`/documents/${document.id}`}>
                       <Button variant="primary" size="sm">
-                        Review
+                        {t('review')}
                       </Button>
                     </Link>
                   </div>
@@ -307,11 +309,11 @@ const ApproverDashboard: React.FC = () => {
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
                 <FileText className="h-6 w-6 text-gray-600" />
               </div>
-              <h3 className="mt-3 text-lg font-medium text-gray-900">No documents found</h3>
+              <h3 className="mt-3 text-lg font-medium text-gray-900">{t('noDocumentsFound')}</h3>
               <p className="mt-2 text-sm text-gray-500">
                 {statusFilter !== 'all'
-                  ? `No documents with status "${statusFilter}" found.`
-                  : 'No documents have been assigned to you for approval yet.'}
+                  ? t('noDocumentsWithStatus').replace('{status}', statusFilter)
+                  : t('noDocumentsAssignedForApproval')}
               </p>
             </div>
           </CardBody>

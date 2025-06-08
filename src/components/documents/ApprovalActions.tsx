@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Check, X, MessageCircle, AlertCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import { Card, CardBody, CardHeader } from '../ui/Card';
+import { useTranslation } from '../../lib/translations';
 
 interface ApprovalActionsProps {
   documentId: string;
@@ -18,6 +19,7 @@ const ApprovalActions: React.FC<ApprovalActionsProps> = ({
   isLoading,
   disabled = false,
 }) => {
+  const t = useTranslation();
   const [selectedAction, setSelectedAction] = useState<'approved' | 'rejected' | 'needs_changes' | null>(null);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,15 +60,15 @@ const ApprovalActions: React.FC<ApprovalActionsProps> = ({
   return (
     <Card>
       <CardHeader>
-        <h3 className="text-lg font-medium text-gray-900">Approval Actions</h3>
-        <p className="text-sm text-gray-600">Review and take action on this document</p>
+        <h3 className="text-lg font-medium text-gray-900">{t('approvalActions')}</h3>
+        <p className="text-sm text-gray-600">{t('reviewAndTakeAction')}</p>
       </CardHeader>
       
       <CardBody>
         {!selectedAction ? (
           <div className="space-y-4">
             <p className="text-sm text-gray-700 mb-4">
-              Choose an action to take on this document:
+              {t('chooseActionToTake')}:
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -77,7 +79,7 @@ const ApprovalActions: React.FC<ApprovalActionsProps> = ({
                 leftIcon={<Check size={16} />}
                 className="justify-center"
               >
-                Approve
+                {t('approve')}
               </Button>
               
               <Button
@@ -87,7 +89,7 @@ const ApprovalActions: React.FC<ApprovalActionsProps> = ({
                 leftIcon={<AlertCircle size={16} />}
                 className="justify-center"
               >
-                Request Changes
+                {t('requestChanges')}
               </Button>
               
               <Button
@@ -97,7 +99,7 @@ const ApprovalActions: React.FC<ApprovalActionsProps> = ({
                 leftIcon={<X size={16} />}
                 className="justify-center"
               >
-                Reject
+                {t('reject')}
               </Button>
             </div>
           </div>
@@ -107,26 +109,26 @@ const ApprovalActions: React.FC<ApprovalActionsProps> = ({
               {selectedAction === 'approved' && (
                 <>
                   <Check className="w-5 h-5 text-success-600" />
-                  <span className="font-medium text-success-700">Approving Document</span>
+                  <span className="font-medium text-success-700">{t('approvingDocument')}</span>
                 </>
               )}
               {selectedAction === 'rejected' && (
                 <>
                   <X className="w-5 h-5 text-error-600" />
-                  <span className="font-medium text-error-700">Rejecting Document</span>
+                  <span className="font-medium text-error-700">{t('rejectingDocument')}</span>
                 </>
               )}
               {selectedAction === 'needs_changes' && (
                 <>
                   <AlertCircle className="w-5 h-5 text-warning-600" />
-                  <span className="font-medium text-warning-700">Requesting Changes</span>
+                  <span className="font-medium text-warning-700">{t('requestingChanges')}</span>
                 </>
               )}
             </div>
 
             <div>
               <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-2">
-                Comment <span className="text-error-500">*</span>
+                {t('comment')} <span className="text-error-500">*</span>
               </label>
               <div className="relative">
                 <MessageCircle className="absolute left-3 top-3 text-gray-400" size={18} />
@@ -139,10 +141,10 @@ const ApprovalActions: React.FC<ApprovalActionsProps> = ({
                   className="block w-full pl-10 pr-3 py-2 rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   placeholder={
                     selectedAction === 'approved' 
-                      ? 'Add approval comments...'
+                      ? t('addApprovalComments')
                       : selectedAction === 'rejected'
-                      ? 'Explain why this document is being rejected...'
-                      : 'Specify what changes are needed...'
+                      ? t('explainRejectionReason')
+                      : t('specifyChangesNeeded')
                   }
                 />
               </div>
@@ -155,7 +157,7 @@ const ApprovalActions: React.FC<ApprovalActionsProps> = ({
                 onClick={handleCancel}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 type="submit"
@@ -169,7 +171,10 @@ const ApprovalActions: React.FC<ApprovalActionsProps> = ({
                 isLoading={isSubmitting}
                 disabled={!comment.trim() || isSubmitting}
               >
-                {isSubmitting ? 'Submitting...' : `Confirm ${selectedAction === 'needs_changes' ? 'Request Changes' : selectedAction}`}
+                {isSubmitting ? t('submitting') : t('confirmAction').replace('{action}', 
+                  selectedAction === 'needs_changes' ? t('requestChanges') : 
+                  selectedAction === 'approved' ? t('approve') : t('reject')
+                )}
               </Button>
             </div>
           </form>

@@ -84,7 +84,7 @@ const DocumentsPage: React.FC = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching documents:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch documents');
+      setError(err instanceof Error ? err.message : t('failedToFetchDocuments'));
       setDocuments([]);
     } finally {
       setIsLoading(false);
@@ -120,7 +120,7 @@ const DocumentsPage: React.FC = () => {
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-error-100">
               <FileText className="h-6 w-6 text-error-600" />
             </div>
-            <h3 className="mt-3 text-lg font-medium text-gray-900">Error</h3>
+            <h3 className="mt-3 text-lg font-medium text-gray-900">{t('error')}</h3>
             <p className="mt-2 text-sm text-gray-500">{error}</p>
             <div className="mt-6">
               <Button
@@ -128,7 +128,7 @@ const DocumentsPage: React.FC = () => {
                 onClick={handleRetry}
                 leftIcon={<RefreshCw size={16} />}
               >
-                Try Again
+                {t('tryAgain')}
               </Button>
             </div>
           </div>
@@ -147,13 +147,13 @@ const DocumentsPage: React.FC = () => {
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
-          <p className="text-gray-600 mt-1">Manage and track your document submissions and approvals</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('documents')}</h1>
+          <p className="text-gray-600 mt-1">{t('manageAndTrackDocuments')}</p>
         </div>
         <div className="mt-4 md:mt-0">
           <Link to="/documents/new">
             <Button variant="primary" leftIcon={<Plus size={16} />}>
-              Submit New Document
+              {t('submitNewDocument')}
             </Button>
           </Link>
         </div>
@@ -164,7 +164,7 @@ const DocumentsPage: React.FC = () => {
         <CardBody className="p-4">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">View:</span>
+              <span className="text-sm font-medium text-gray-700">{t('view')}:</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleViewChange('my-submissions')}
@@ -174,7 +174,7 @@ const DocumentsPage: React.FC = () => {
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  My Submissions
+                  {t('mySubmissions')}
                 </button>
                 <button
                   onClick={() => handleViewChange('for-approval')}
@@ -184,7 +184,7 @@ const DocumentsPage: React.FC = () => {
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  For My Approval
+                  {t('forMyApproval')}
                 </button>
                 <button
                   onClick={() => handleViewChange('all')}
@@ -194,7 +194,7 @@ const DocumentsPage: React.FC = () => {
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  All Documents
+                  {t('allDocuments')}
                 </button>
               </div>
             </div>
@@ -213,7 +213,7 @@ const DocumentsPage: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-center gap-4">
                 <div className="flex-1">
                   <Input
-                    placeholder="Search documents..."
+                    placeholder={t('searchDocuments')}
                     value={searchQuery}
                     onChange={handleSearchChange}
                     leftIcon={<Search size={18} />}
@@ -223,7 +223,7 @@ const DocumentsPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <div className="text-gray-500 flex items-center">
                     <Filter size={16} className="mr-2" />
-                    <span className="text-sm">Status:</span>
+                    <span className="text-sm">{t('status')}:</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -234,7 +234,7 @@ const DocumentsPage: React.FC = () => {
                           : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                       }`}
                     >
-                      All
+                      {t('all')}
                     </button>
                     <button
                       onClick={() => handleStatusFilterChange('pending')}
@@ -244,7 +244,7 @@ const DocumentsPage: React.FC = () => {
                           : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                       }`}
                     >
-                      Pending
+                      {t('pending')}
                     </button>
                     <button
                       onClick={() => handleStatusFilterChange('needs_changes')}
@@ -254,7 +254,7 @@ const DocumentsPage: React.FC = () => {
                           : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                       }`}
                     >
-                      Needs Changes
+                      {t('needsChanges')}
                     </button>
                     <button
                       onClick={() => handleStatusFilterChange('approved')}
@@ -264,7 +264,7 @@ const DocumentsPage: React.FC = () => {
                           : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                       }`}
                     >
-                      Approved
+                      {t('approved')}
                     </button>
                     <button
                       onClick={() => handleStatusFilterChange('rejected')}
@@ -274,7 +274,7 @@ const DocumentsPage: React.FC = () => {
                           : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                       }`}
                     >
-                      Rejected
+                      {t('rejected')}
                     </button>
                   </div>
                 </div>
@@ -284,7 +284,7 @@ const DocumentsPage: React.FC = () => {
 
           {isLoading ? (
             <div className="flex justify-center py-12">
-              <Loader size="lg" text="Loading documents..." />
+              <Loader size="lg" text={t('loadingDocuments')} />
             </div>
           ) : (
             <div>
@@ -299,7 +299,7 @@ const DocumentsPage: React.FC = () => {
                       status={doc.status}
                       createdAt={doc.created_at}
                       updatedAt={doc.updated_at}
-                      userName={doc.submitter?.full_name || 'Unknown User'}
+                      userName={doc.submitter?.full_name || t('unknownUser')}
                     />
                   ))}
                 </div>
@@ -310,16 +310,16 @@ const DocumentsPage: React.FC = () => {
                       <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
                         <FileText className="h-6 w-6 text-gray-600" />
                       </div>
-                      <h3 className="mt-3 text-lg font-medium text-gray-900">No documents found</h3>
+                      <h3 className="mt-3 text-lg font-medium text-gray-900">{t('noDocumentsFound')}</h3>
                       <p className="mt-2 text-sm text-gray-500">
                         {statusFilter !== 'all'
-                          ? `No documents with status "${statusFilter}" found.`
-                          : 'No documents have been submitted yet.'}
+                          ? t('noDocumentsWithStatus').replace('{status}', statusFilter)
+                          : t('noDocumentsSubmitted')}
                       </p>
                       <div className="mt-6">
                         <Link to="/documents/new">
                           <Button variant="primary" leftIcon={<Plus size={16} />}>
-                            Submit First Document
+                            {t('submitFirstDocument')}
                           </Button>
                         </Link>
                       </div>
