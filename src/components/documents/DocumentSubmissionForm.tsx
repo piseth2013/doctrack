@@ -15,7 +15,6 @@ interface Profile {
   email: string;
   role: string;
   department: string | null;
-  position: string | null;
 }
 
 interface DocumentSubmissionFormProps {
@@ -48,7 +47,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, role, department, position')
+        .select('id, full_name, email, role, department')
         .neq('id', user?.id) // Exclude current user
         .order('full_name');
 

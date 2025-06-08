@@ -21,7 +21,7 @@ interface Document {
   updated_at: string;
   user_id: string;
   approver_id: string | null;
-  profiles: {
+  submitter: {
     full_name: string;
   };
 }
@@ -70,7 +70,7 @@ const DocumentsPage: React.FC = () => {
           updated_at, 
           user_id,
           approver_id,
-          profiles (
+          submitter:profiles!documents_user_id_fkey (
             full_name
           )
         `)
@@ -299,7 +299,7 @@ const DocumentsPage: React.FC = () => {
                       status={doc.status}
                       createdAt={doc.created_at}
                       updatedAt={doc.updated_at}
-                      userName={doc.profiles?.full_name || 'Unknown User'}
+                      userName={doc.submitter?.full_name || 'Unknown User'}
                     />
                   ))}
                 </div>
