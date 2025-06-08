@@ -163,6 +163,24 @@ export const translations = {
     documentResubmittedSuccessfully: 'Document resubmitted successfully!',
     resubmittingDocument: 'Resubmitting Document',
     resubmittingDocumentDescription: 'You are resubmitting "{title}". Please make the requested changes and submit again.',
+
+    // Document Submission Form
+    submitDocumentForApproval: 'Submit Document for Approval',
+    uploadAndSubmitDocument: 'Upload and submit your document to an approver',
+    enterDocumentTitle: 'Enter document title',
+    describeDocumentPurpose: 'Describe the document and its purpose',
+    selectApprover: 'Select Approver',
+    chooseApprover: 'Choose an approver...',
+    addSpecialInstructions: 'Add any special instructions or context for the approver',
+    submitting: 'Submitting...',
+    submitForApproval: 'Submit for Approval',
+    documentTitleRequired: 'Document title is required',
+    pleaseSelectApprover: 'Please select an approver',
+    pleaseUploadAtLeastOneFile: 'Please upload at least one file',
+    failedToLoadApprovers: 'Failed to load approvers',
+    failedToUpload: 'Failed to upload',
+    failedToCreateFileRecord: 'Failed to create file record',
+    failedToSubmitDocument: 'Failed to submit document',
   },
   km: {
     // Navigation
@@ -314,6 +332,24 @@ export const translations = {
     documentResubmittedSuccessfully: 'ឯកសារត្រូវបានដាក់ស្នើឡើងវិញដោយជោគជ័យ!',
     resubmittingDocument: 'កំពុងដាក់ស្នើឯកសារឡើងវិញ',
     resubmittingDocumentDescription: 'អ្នកកំពុងដាក់ស្នើឯកសារ "{title}" ឡើងវិញ។ សូមធ្វើការផ្លាស់ប្តូរដែលបានស្នើសុំ ហើយដាក់ស្នើម្តងទៀត។',
+
+    // Document Submission Form
+    submitDocumentForApproval: 'ដាក់ស្នើឯកសារសម្រាប់ការអនុម័ត',
+    uploadAndSubmitDocument: 'បង្ហោះនិងដាក់ស្នើឯកសាររបស់អ្នកទៅអ្នកអនុម័ត',
+    enterDocumentTitle: 'បញ្ចូលចំណងជើងឯកសារ',
+    describeDocumentPurpose: 'ពិពណ៌នាអំពីឯកសារនិងគោលបំណងរបស់វា',
+    selectApprover: 'ជ្រើសរើសអ្នកអនុម័ត',
+    chooseApprover: 'ជ្រើសរើសអ្នកអនុម័ត...',
+    addSpecialInstructions: 'បន្ថែមការណែនាំពិសេសឬបរិបទសម្រាប់អ្នកអនុម័ត',
+    submitting: 'កំពុងដាក់ស្នើ...',
+    submitForApproval: 'ដាក់ស្នើសម្រាប់ការអនុម័ត',
+    documentTitleRequired: 'ចំណងជើងឯកសារត្រូវបានទាមទារ',
+    pleaseSelectApprover: 'សូមជ្រើសរើសអ្នកអនុម័ត',
+    pleaseUploadAtLeastOneFile: 'សូមបង្ហោះឯកសារយ៉ាងហោចណាស់មួយ',
+    failedToLoadApprovers: 'បរាជ័យក្នុងការផ្ទុកអ្នកអនុម័ត',
+    failedToUpload: 'បរាជ័យក្នុងការបង្ហោះ',
+    failedToCreateFileRecord: 'បរាជ័យក្នុងការបង្កើតកំណត់ត្រាឯកសារ',
+    failedToSubmitDocument: 'បរាជ័យក្នុងការដាក់ស្នើឯកសារ',
   },
 };
 

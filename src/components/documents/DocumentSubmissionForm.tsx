@@ -55,7 +55,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
       setApprovers(data || []);
     } catch (err) {
       console.error('Error fetching approvers:', err);
-      setError('Failed to load approvers');
+      setError(t('failedToLoadApprovers'));
     } finally {
       setIsLoading(false);
     }
@@ -86,17 +86,17 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
     e.preventDefault();
     
     if (!formData.title.trim()) {
-      setError('Document title is required');
+      setError(t('documentTitleRequired'));
       return;
     }
     
     if (!formData.approver_id) {
-      setError('Please select an approver');
+      setError(t('pleaseSelectApprover'));
       return;
     }
     
     if (files.length === 0) {
-      setError('Please upload at least one file');
+      setError(t('pleaseUploadAtLeastOneFile'));
       return;
     }
 
@@ -133,7 +133,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
           .upload(filePath, file);
 
         if (uploadError) {
-          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+          throw new Error(`${t('failedToUpload')} ${file.name}: ${uploadError.message}`);
         }
 
         // Create document_files record
@@ -148,7 +148,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
           });
 
         if (fileRecordError) {
-          throw new Error(`Failed to create file record: ${fileRecordError.message}`);
+          throw new Error(`${t('failedToCreateFileRecord')}: ${fileRecordError.message}`);
         }
       }
 
@@ -157,12 +157,12 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
         onSubmit();
       } else {
         navigate(`/documents/${document.id}`, {
-          state: { message: 'Document submitted successfully for approval!' }
+          state: { message: t('documentSubmittedSuccessfully') }
         });
       }
     } catch (err) {
       console.error('Error submitting document:', err);
-      setError(err instanceof Error ? err.message : 'Failed to submit document');
+      setError(err instanceof Error ? err.message : t('failedToSubmitDocument'));
     } finally {
       setIsSubmitting(false);
     }
@@ -184,8 +184,8 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
             <FileText className="w-6 h-6 text-primary-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Submit Document for Approval</h2>
-            <p className="text-sm text-gray-600">Upload and submit your document to an approver</p>
+            <h2 className="text-xl font-semibold text-gray-900">{t('submitDocumentForApproval')}</h2>
+            <p className="text-sm text-gray-600">{t('uploadAndSubmitDocument')}</p>
           </div>
         </div>
       </CardHeader>
@@ -201,19 +201,19 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <Input
-                label="Document Title"
+                label={t('title')}
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
                 required
-                placeholder="Enter document title"
+                placeholder={t('enterDocumentTitle')}
                 leftIcon={<FileText size={18} />}
               />
             </div>
 
             <div className="md:col-span-2">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Document Description
+                {t('description')}
               </label>
               <textarea
                 id="description"
@@ -222,13 +222,13 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
                 value={formData.description}
                 onChange={handleInputChange}
                 className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                placeholder="Describe the document and its purpose"
+                placeholder={t('describeDocumentPurpose')}
               />
             </div>
 
             <div className="md:col-span-2">
               <label htmlFor="approver_id" className="block text-sm font-medium text-gray-700 mb-1">
-                Select Approver <span className="text-error-500">*</span>
+                {t('selectApprover')} <span className="text-error-500">*</span>
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -240,11 +240,11 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
                   required
                   className="block w-full pl-10 pr-3 py-2 rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
-                  <option value="">Choose an approver...</option>
+                  <option value="">{t('chooseApprover')}</option>
                   {approvers.map((approver) => (
                     <option key={approver.id} value={approver.id}>
                       {approver.full_name} ({approver.email})
-                      {approver.role === 'admin' && ' - Admin'}
+                      {approver.role === 'admin' && ` - ${t('administrator')}`}
                       {approver.department && ` - ${approver.department}`}
                     </option>
                   ))}
@@ -254,7 +254,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
 
             <div className="md:col-span-2">
               <label htmlFor="note_to_approver" className="block text-sm font-medium text-gray-700 mb-1">
-                Note to Approver
+                {t('noteToApprover')}
               </label>
               <div className="relative">
                 <MessageSquare className="absolute left-3 top-3 text-gray-400" size={18} />
@@ -265,14 +265,14 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
                   value={formData.note_to_approver}
                   onChange={handleInputChange}
                   className="block w-full pl-10 pr-3 py-2 rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                  placeholder="Add any special instructions or context for the approver"
+                  placeholder={t('addSpecialInstructions')}
                 />
               </div>
             </div>
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Document Files <span className="text-error-500">*</span>
+                {t('files')} <span className="text-error-500">*</span>
               </label>
               <DocumentUploader
                 onFilesSelected={setFiles}
@@ -289,7 +289,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
               variant="outline"
               onClick={() => navigate('/documents')}
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               type="submit"
@@ -298,7 +298,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
               disabled={isSubmitting || files.length === 0}
               leftIcon={<Send size={16} />}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
+              {isSubmitting ? t('submitting') : t('submitForApproval')}
             </Button>
           </div>
         </form>
