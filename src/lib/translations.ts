@@ -1,3 +1,23 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface TranslationStore {
+  language: 'en' | 'km';
+  setLanguage: (language: 'en' | 'km') => void;
+}
+
+export const useTranslationStore = create<TranslationStore>()(
+  persist(
+    (set) => ({
+      language: 'en',
+      setLanguage: (language) => set({ language }),
+    }),
+    {
+      name: 'translation-storage',
+    }
+  )
+);
+
 export const translations = {
   en: {
     // Navigation
