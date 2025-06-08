@@ -14,28 +14,46 @@ export interface Database {
           id: string
           title: string
           description: string | null
-          status: 'pending' | 'approved' | 'rejected'
+          status: 'pending' | 'approved' | 'rejected' | 'needs_changes'
           user_id: string
           created_at: string
           updated_at: string
+          document_date: string
+          approver_id: string | null
+          note_to_approver: string | null
+          approver_comment: string | null
+          approved_at: string | null
+          approved_by: string | null
         }
         Insert: {
           id?: string
           title: string
           description?: string | null
-          status?: 'pending' | 'approved' | 'rejected'
+          status?: 'pending' | 'approved' | 'rejected' | 'needs_changes'
           user_id: string
           created_at?: string
           updated_at?: string
+          document_date?: string
+          approver_id?: string | null
+          note_to_approver?: string | null
+          approver_comment?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
         }
         Update: {
           id?: string
           title?: string
           description?: string | null
-          status?: 'pending' | 'approved' | 'rejected'
+          status?: 'pending' | 'approved' | 'rejected' | 'needs_changes'
           user_id?: string
           created_at?: string
           updated_at?: string
+          document_date?: string
+          approver_id?: string | null
+          note_to_approver?: string | null
+          approver_comment?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
         }
       }
       document_files: {
@@ -97,7 +115,7 @@ export interface Database {
           full_name: string
           role: 'admin' | 'user'
           department: string | null
-          position: string | null
+          position_id: string | null
           created_at: string
           updated_at: string
         }
@@ -107,7 +125,7 @@ export interface Database {
           full_name: string
           role?: 'admin' | 'user'
           department?: string | null
-          position?: string | null
+          position_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -117,9 +135,61 @@ export interface Database {
           full_name?: string
           role?: 'admin' | 'user'
           department?: string | null
-          position?: string | null
+          position_id?: string | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      offices: {
+        Row: {
+          id: string
+          name: string
+          location: string | null
+          phone: string | null
+          email: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          location?: string | null
+          phone?: string | null
+          email?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          location?: string | null
+          phone?: string | null
+          email?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      verification_codes: {
+        Row: {
+          id: string
+          email: string
+          code: string
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          code: string
+          expires_at: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          code?: string
+          expires_at?: string
+          created_at?: string
         }
       }
       logo_settings: {

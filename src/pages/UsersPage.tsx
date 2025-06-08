@@ -14,8 +14,11 @@ interface User {
   full_name: string;
   role: 'admin' | 'user';
   department: string | null;
-  position: string | null;
+  position_id: string | null;
   created_at: string;
+  position?: {
+    name: string;
+  };
 }
 
 interface Position {
@@ -28,7 +31,7 @@ interface UserFormData {
   full_name: string;
   role: 'admin' | 'user';
   department: string;
-  position: string;
+  position_id: string;
   password?: string;
 }
 
@@ -37,7 +40,7 @@ const initialFormData: UserFormData = {
   full_name: '',
   role: 'user',
   department: '',
-  position: '',
+  position_id: '',
 };
 
 const UsersPage: React.FC = () => {
@@ -91,7 +94,10 @@ const UsersPage: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          position:positions(name)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -140,7 +146,7 @@ const UsersPage: React.FC = () => {
       full_name: userToEdit.full_name,
       role: userToEdit.role,
       department: userToEdit.department || '',
-      position: userToEdit.position || '',
+      position_id: userToEdit.position_id || '',
     });
     setEditingUserId(userId);
     setShowForm(true);
@@ -200,21 +206,30 @@ const UsersPage: React.FC = () => {
             full_name: formData.full_name,
             role: formData.role,
             department: formData.department || null,
-            position: formData.position || null,
+            position_id: formData.position_id || null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', editingUserId);
 
         if (updateError) throw updateError;
       } else {
-        // Create new user
+        // Create new user - send position_id instead of position
+        const userData = {
+          ...formData,
+          position_id: formData.position_id || null,
+        };
+        delete userData.position_id; // Remove position_id from the payload as it should be handled by the edge function
+        
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...userData,
+            position_id: formData.position_id || null,
+          }),
         });
 
         const result = await response.json();
@@ -240,7 +255,7 @@ const UsersPage: React.FC = () => {
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (user.department && user.department.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (user.position && user.position.toLowerCase().includes(searchQuery.toLowerCase()))
+    (user.position?.name && user.position.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (currentUserRole !== 'admin') {
@@ -355,19 +370,19 @@ const UsersPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="position_id" className="block text-sm font-medium text-gray-700 mb-1">
                     {t('position')}
                   </label>
                   <select
-                    id="position"
-                    name="position"
-                    value={formData.position}
+                    id="position_id"
+                    name="position_id"
+                    value={formData.position_id}
                     onChange={handleInputChange}
                     className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   >
                     <option value="">{t('selectPosition')}</option>
                     {positions.map(position => (
-                      <option key={position.id} value={position.name}>
+                      <option key={position.id} value={position.id}>
                         {position.name}
                       </option>
                     ))}
@@ -444,7 +459,7 @@ const UsersPage: React.FC = () => {
                 fullName={user.full_name}
                 role={user.role}
                 department={user.department}
-                position={user.position}
+                position={user.position?.name || null}
                 createdAt={user.created_at}
                 onDelete={handleDeleteUser}
                 onEdit={handleEdit}
