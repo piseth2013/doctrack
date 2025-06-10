@@ -212,7 +212,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                 {t('description')}
               </label>
               <textarea
@@ -221,7 +221,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
                 rows={3}
                 value={formData.description}
                 onChange={handleInputChange}
-                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm mb-4"
                 placeholder={t('describeDocumentPurpose')}
               />
             </div>
@@ -253,7 +253,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="note_to_approver" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="note_to_approver" className="block text-sm font-medium text-gray-700 mb-2">
                 {t('noteToApprover')}
               </label>
               <div className="relative">
@@ -264,7 +264,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
                   rows={3}
                   value={formData.note_to_approver}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-3 py-2 rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm mb-4"
                   placeholder={t('addSpecialInstructions')}
                 />
               </div>
