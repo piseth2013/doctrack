@@ -221,7 +221,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
                 rows={3}
                 value={formData.description}
                 onChange={handleInputChange}
-                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm mb-4"
+                className="block w-full rounded-md p-4 shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm mb-4"
                 placeholder={t('describeDocumentPurpose')}
               />
             </div>
