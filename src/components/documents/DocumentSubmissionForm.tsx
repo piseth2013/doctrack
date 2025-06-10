@@ -218,7 +218,7 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
               <textarea
                 id="description"
                 name="description"
-                rows={3}
+                rows={4}
                 value={formData.description}
                 onChange={handleInputChange}
                 className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm mb-4"
