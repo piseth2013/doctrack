@@ -218,10 +218,10 @@ const DocumentSubmissionForm: React.FC<DocumentSubmissionFormProps> = ({ onSubmi
               <textarea
                 id="description"
                 name="description"
-                rows={4}
+                rows={3}
                 value={formData.description}
                 onChange={handleInputChange}
-                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm mb-4"
+                className="block w-full rounded-md shadow-sm border-gray-300 focus:ring-primary-500 focus:border-primary-500 sm:text-sm mb-6"
                 placeholder={t('describeDocumentPurpose')}
               />
             </div>
