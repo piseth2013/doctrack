@@ -19,26 +19,7 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     const fetchLogo = async () => {
       try {
-        // Check if the logo_settings table exists first
-        const { data: tables, error: tablesError } = await supabase
-          .schema('information_schema')
-          .from('tables')
-          .select('table_name')
-          .eq('table_name', 'logo_settings')
-          .eq('table_schema', 'public');
-
-        if (tablesError) {
-          console.log('Could not check for logo_settings table:', tablesError.message);
-          return;
-        }
-
-        // If table doesn't exist, skip logo fetching
-        if (!tables || tables.length === 0) {
-          console.log('logo_settings table does not exist, skipping logo fetch');
-          return;
-        }
-
-        // Table exists, try to fetch logo
+        // Directly attempt to fetch logo from logo_settings table
         const { data, error } = await supabase
           .from('logo_settings')
           .select('logo_url')
