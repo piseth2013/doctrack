@@ -21,7 +21,8 @@ const LoginPage: React.FC = () => {
       try {
         // Check if the logo_settings table exists first
         const { data: tables, error: tablesError } = await supabase
-          .from('information_schema.tables')
+          .schema('information_schema')
+          .from('tables')
           .select('table_name')
           .eq('table_name', 'logo_settings')
           .eq('table_schema', 'public');
