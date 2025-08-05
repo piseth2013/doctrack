@@ -15,8 +15,15 @@ const LoginPage: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const { user } = useAuth();
   const t = useTranslation();
+  const [configError, setConfigError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if Supabase is configured
+    if (!supabase) {
+      setConfigError('Application not configured. Please contact administrator.');
+      return;
+    }
+
     const fetchLogo = async () => {
       try {
         // Directly attempt to fetch logo from logo_settings table
@@ -97,6 +104,12 @@ const LoginPage: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {configError && (
+            <div className="mb-6 text-sm text-error-600 bg-error-50 p-3 rounded-md text-center">
+              {configError}
+            </div>
+          )}
+          
           <form className="space-y-6" onSubmit={handleSubmit}>
             <Input
               label={t('email')}
@@ -107,6 +120,7 @@ const LoginPage: React.FC = () => {
               required
               autoComplete="email"
               leftIcon={<Mail size={18} />}
+              disabled={!!configError}
             />
 
             <Input
@@ -118,6 +132,7 @@ const LoginPage: React.FC = () => {
               required
               autoComplete="current-password"
               leftIcon={<Lock size={18} />}
+              disabled={!!configError}
             />
 
             {errorMessage && (
@@ -133,6 +148,7 @@ const LoginPage: React.FC = () => {
                 isLoading={isLoading}
                 fullWidth
                 className="py-2.5"
+                disabled={!!configError}
               >
                 {t('signIn')}
               </Button>
