@@ -7,18 +7,31 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Enhanced error checking for environment variables
 if (!supabaseUrl) {
-  throw new Error('Missing VITE_SUPABASE_URL environment variable. Please check your .env file and ensure VITE_SUPABASE_URL is set to your Supabase project URL.');
+  console.error('Missing VITE_SUPABASE_URL environment variable. Please check your .env file and ensure VITE_SUPABASE_URL is set to your Supabase project URL.');
+  throw new Error('Supabase configuration error: Missing project URL. Please check your environment variables.');
 }
 
 if (!supabaseAnonKey) {
-  throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable. Please check your .env file and ensure VITE_SUPABASE_ANON_KEY is set to your Supabase anonymous key.');
+  console.error('Missing VITE_SUPABASE_ANON_KEY environment variable. Please check your .env file and ensure VITE_SUPABASE_ANON_KEY is set to your Supabase anonymous key.');
+  throw new Error('Supabase configuration error: Missing anonymous key. Please check your environment variables.');
 }
 
-// Validate URL format
+// Validate URL format and provide helpful error messages
+if (supabaseUrl === 'your_supabase_project_url_here') {
+  console.error('VITE_SUPABASE_URL is still set to placeholder value. Please update .env file with your actual Supabase project URL.');
+  throw new Error('Supabase configuration error: Please update your environment variables with actual values.');
+}
+
+if (supabaseAnonKey === 'your_supabase_anon_key_here') {
+  console.error('VITE_SUPABASE_ANON_KEY is still set to placeholder value. Please update .env file with your actual Supabase anonymous key.');
+  throw new Error('Supabase configuration error: Please update your environment variables with actual values.');
+}
+
 try {
   new URL(supabaseUrl);
 } catch (error) {
-  throw new Error(`Invalid VITE_SUPABASE_URL format: ${supabaseUrl}. Please ensure it's a valid URL (e.g., https://your-project-id.supabase.co)`);
+  console.error(`Invalid VITE_SUPABASE_URL format: ${supabaseUrl}. Please ensure it's a valid URL (e.g., https://your-project-id.supabase.co)`);
+  throw new Error('Supabase configuration error: Invalid project URL format. Please check your environment variables.');
 }
 
 // Ensure URL uses HTTPS
